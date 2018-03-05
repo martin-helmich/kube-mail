@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "tests_compile_out"
+  },
+  "include": [
+    "tests_compile/**/*"
+  ]
+}
