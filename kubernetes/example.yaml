@@ -1,0 +1,48 @@
+apiVersion: kubemail.helmich.me/v1alpha1
+kind: SMTPServer
+metadata:
+  name: default-smtp
+  namespace: default
+spec:
+  server: smtp.1und1.de
+  port: 465
+  tls: true
+  authType: PLAIN
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: default-smtp
+  namespace: default
+data:
+  username: dGVzdA==
+  password: dGVzdA==
+---
+apiVersion: kubemail.helmich.me/v1alpha1
+kind: EmailPolicy
+metadata:
+  name: 1and1-smtp
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      foo: bar
+  sink:
+    smtp:
+      server:
+        name: default-smtp
+        namespace: default
+      credentials:
+        name: default-smtp
+        namespace: default
+---
+apiVersion: kubemail.helmich.me/v1alpha1
+kind: EmailPolicy
+metadata:
+  name: default
+  namespace: default
+spec:
+  default: true
+  sink:
+    catch:
+      retentionDays: 7
