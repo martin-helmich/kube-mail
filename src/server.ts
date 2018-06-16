@@ -1,45 +1,47 @@
 import {SMTPServer} from "smtp-server";
 import {SMTPBackend} from "./backend";
-import {StaticPolicyProvider} from "./policy/static";
 import {ParserImpl} from "./sink/parser";
-import {ElasticsearchSink} from "./sink/elasticsearch";
 import {Client} from "elasticsearch";
-import {Sink} from "./sink/interface";
 import {SMTPUpstream} from "./upstream/smtp";
-import * as express from "express";
 import {APIServer} from "./api";
-import {StatisticsRecorder} from "./stats/recorder";
-import {ElasticsearchStatisticsRecorder} from "./stats/elasticsearch";
+import {register} from "prom-client";
+import * as config from "config";
+import {buildSinkFromConfig} from "./sink/factory";
+import {PolicyConfig, RecorderConfig, SinkConfig} from "./config";
+import {buildRecorderFromConfig} from "./stats/factory";
+import {buildKubernetesClientFromConfig} from "./k8s/factory";
+import {KubernetesPolicyProviderFactory} from "./policy/factory";
+import {MonitoringServer} from "./monitoring";
 
 console.log("starting");
 
-const client = new Client({host: "localhost:9200"});
+const client = new Client({host: config.get("elasticsearch.host")});
+
 const debug = require("debug")("kubemail:main");
 const parser = new ParserImpl();
-const sink: Sink = new ElasticsearchSink(client, {index: "caught-messages"});
-const recorder: StatisticsRecorder = new ElasticsearchStatisticsRecorder(client, {index: "records"});
+const sink = buildSinkFromConfig(config.get<SinkConfig>("sink"), client);
+const recorder = buildRecorderFromConfig(config.get<RecorderConfig>("recorder"), client);
+
 // const provider = new StaticPolicyProvider({
 //     id: "fallback",
 //     sourceReference: {identifier: "martin"},
 //     type: "catch"
 // });
-const provider = new StaticPolicyProvider({
-    id: "fallback",
-    sourceReference: {identifier: "martin"},
-    type: "forward",
-    smtp: {
-        server: "smtp.1und1.de",
-        port: 465,
-        tls: true,
-        auth: {
-            method: "PLAIN",
-            username: "m37160104-5",
-            password: "juddl12-4",
-        }
-    }
-});
-const upstream = new SMTPUpstream();
-const backend = new SMTPBackend(provider, parser, recorder, sink, upstream);
+// const provider = new StaticPolicyProvider({
+//     id: "fallback",
+//     sourceReference: {identifier: "martin"},
+//     type: "forward",
+//     smtp: {
+//         server: "smtp.1und1.de",
+//         port: 465,
+//         tls: true,
+//         auth: {
+//             method: "PLAIN",
+//             username: "m37160104-5",
+//             password: "juddl12-4",
+//         }
+//     }
+// });
 
 (async () => {
     if (sink.setup) {
@@ -52,12 +54,20 @@ const backend = new SMTPBackend(provider, parser, recorder, sink, upstream);
         await recorder.setup();
     }
 
-    const api = new APIServer({
+    const api = buildKubernetesClientFromConfig(config.get<PolicyConfig>("policy"), register);
+
+    const providerFactory = new KubernetesPolicyProviderFactory(api);
+    const [provider, providerInitialized] = providerFactory.build();
+
+    const upstream = new SMTPUpstream();
+    const backend = new SMTPBackend(provider, parser, recorder, sink, upstream);
+
+    const apiServer = new APIServer({
         sink,
         recorder,
     });
 
-    const server = new SMTPServer({
+    const smtpServer = new SMTPServer({
         authOptional: true,
         banner: "KubeMail 1.0",
         logger: true,
@@ -66,6 +76,11 @@ const backend = new SMTPBackend(provider, parser, recorder, sink, upstream);
         onData: backend.onData.bind(backend),
     });
 
-    api.listen(8080);
-    server.listen(1025);
+    const monitoringServer = new MonitoringServer();
+
+    await providerInitialized;
+
+    monitoringServer.listen(9100);
+    apiServer.listen(8080);
+    smtpServer.listen(1025);
 })();

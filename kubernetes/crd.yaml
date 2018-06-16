@@ -27,6 +27,14 @@ spec:
                 matchLabels:
                   type: object
                   additionalProperties: true
+            ratelimiting:
+              required: ["maximum"]
+              properties:
+                maximum:
+                  type: number
+                period:
+                  type: string
+                  enum: ["hour", "minute"]
             sink:
               oneOf:
                 - required: ["smtp"]

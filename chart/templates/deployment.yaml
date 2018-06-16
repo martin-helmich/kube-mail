@@ -1,0 +1,46 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "chart.fullname" . }}
+  labels:
+    app: {{ template "chart.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "chart.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.http.internalPort }}
+            - containerPort: {{ .Values.service.smtp.internalPort }}
+            - containerPort: 9100
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: 9100
+          readinessProbe:
+            httpGet:
+              path: /readiness
+              port: 9100
+          env:
+            - name: KUBEMAIL_ELASTICSEARCH_HOST
+              value: {{ template "chart.fullname" . }}-elasticsearch:9200
+            - name: KUBEMAIL_KUBERNETES_INCLUSTER
+              value: "true"
+            - name: DEBUG
+              value: "*"
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+    {{- end }}

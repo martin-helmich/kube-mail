@@ -1,4 +1,4 @@
-import {Message, RetrieveOptions, RetrieveResult, Sink} from "./interface";
+import {Message, Query, RetrieveOptions, RetrieveResult, Sink} from "./interface";
 import {Client} from "elasticsearch";
 import {SourceReference} from "../policy/provider";
 import {TypedStream} from "../util";
@@ -25,8 +25,29 @@ export class ElasticsearchSink implements Sink {
         this.options = {...defaultOpts, ...options};
     }
 
+    private async waitUntilAvailable() {
+        const sleep = () => new Promise(res => setTimeout(res, 1000));
+
+        debug("waiting until elasticsearch is available");
+
+        while (true) {
+            try {
+                await this.client.ping({});
+
+                debug("elasticsearch is available");
+
+                return;
+            } catch (err) {
+                debug("elasticsearch is not available, yet: %o", err);
+                await sleep();
+            }
+        }
+    }
+
     public async setup() {
         const {index, type} = this.options;
+
+        await this.waitUntilAvailable();
 
         debug("starting setup");
 
@@ -118,7 +139,7 @@ export class ElasticsearchSink implements Sink {
             index,
             type,
             id: uuid.v4(),
-            body: {sourceID: source.identifier, ...message},
+            body: {source, ...message},
         });
 
         debug("stored message: %o", response);
@@ -126,24 +147,38 @@ export class ElasticsearchSink implements Sink {
         return;
     }
 
-    public async retrieveMessages(source: SourceReference, options: RetrieveOptions = {}): Promise<RetrieveResult> {
+    private static queryToSearchTerm(query: Query): any {
+        const term: any = {
+            "source.namespace": query.namespace,
+        };
+
+        if (query.podName) {
+            term["source.podName"] = query.podName;
+        }
+
+        if (query.labelSelector) {
+            for (const labelName of Object.keys(query.labelSelector)) {
+                term[`source.labels.${labelName}`] = query.labelSelector[labelName];
+            }
+        }
+
+        return term;
+    }
+
+    public async retrieveMessages(query: Query, options: RetrieveOptions = {}): Promise<RetrieveResult> {
         const {index, type} = this.options;
         const {limit = 100, offset = 0} = options;
-        const stream = new Stream();
 
-        debug("querying for source %o", source);
+        debug("querying by %o", query);
 
+        const term = ElasticsearchSink.queryToSearchTerm(query);
         const result = await this.client.search({
             index,
             type,
             from: offset,
             size: limit,
             body: {
-                query: {
-                    term: {
-                        sourceID: source.identifier,
-                    }
-                }
+                query: {term}
             }
         });
 

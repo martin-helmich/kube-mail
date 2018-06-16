@@ -63,7 +63,6 @@ export class SMTPBackend {
             if (policy.type === "catch") {
                 const msg = await this.parser.parseMessage(session, buf);
 
-                msg.ownershipLabels = policy.ownershipLabels;
                 msg.remoteAddress = remoteAddress;
 
                 debug("parsed message: %O", msg);
@@ -72,6 +71,7 @@ export class SMTPBackend {
 
                 await this.sink.storeMessage(policy.sourceReference, msg);
             } else {
+                // noinspection JSIgnoredPromiseFromCall
                 this.recorder.observe(policy, mailFrom.address, rcptTo.map(r => r.address));
 
                 await this.upstream.forward(policy, envelope, buf);

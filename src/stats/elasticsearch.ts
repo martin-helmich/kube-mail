@@ -1,5 +1,5 @@
-import {defaultSummarizeOptions, StatisticsRecorder, SummarizeOptions, SummarizeResults} from "./recorder";
-import {Policy, SourceReference} from "../policy/provider";
+import {defaultSummarizeOptions, Query, StatisticsRecorder, SummarizeOptions, SummarizeResults} from "./recorder";
+import {Policy} from "../policy/provider";
 import {Client} from "elasticsearch";
 import {anonymizeEmailAddress} from "./anon";
 import uuid = require("uuid");
@@ -74,7 +74,7 @@ export class ElasticsearchStatisticsRecorder implements StatisticsRecorder {
             type,
             id,
             body: {
-                sourceID: policy.sourceReference.identifier,
+                source: policy.sourceReference,
                 date,
                 sender,
                 recipients,
@@ -82,11 +82,44 @@ export class ElasticsearchStatisticsRecorder implements StatisticsRecorder {
         })
     }
 
-    public async summarize(source: SourceReference, from: Date, opts: Partial<SummarizeOptions>): Promise<SummarizeResults> {
+    private static queryToElasticsearchQuery(query: Query): any {
+        const term: any = {
+            "source.namespace": query.namespace,
+        };
+
+        if (query.podName) {
+            term["source.podName"] = query.podName;
+        }
+
+        if (query.labelSelector) {
+            for (const labelName of Object.keys(query.labelSelector)) {
+                term[`source.labels.${labelName}`] = query.labelSelector[labelName];
+            }
+        }
+
+        return {
+            bool: {
+                must: [
+                    {term},
+                    {
+                        range: {
+                            date: {
+                                gte: query.from.getTime(),
+                                format: "epoch_millis"
+                            }
+                        }
+                    },
+                ]
+            }
+        };
+    }
+
+    public async summarize(query: Query, opts: Partial<SummarizeOptions>): Promise<SummarizeResults> {
         opts = {...defaultSummarizeOptions, ...opts};
 
         const {index, type} = this.options;
         const {interval, timezone} = opts;
+        const elasticQuery = ElasticsearchStatisticsRecorder.queryToElasticsearchQuery(query);
         const body = {
             aggs: {
                 summary: {
@@ -114,25 +147,7 @@ export class ElasticsearchStatisticsRecorder implements StatisticsRecorder {
             docvalue_fields: ["date"],
             script_fields: {},
 
-            query: {
-                bool: {
-                    must: [
-                        {
-                            term: {
-                                sourceID: source.identifier,
-                            }
-                        },
-                        {
-                            range: {
-                                date: {
-                                    gte: from.getTime(),
-                                    format: "epoch_millis"
-                                }
-                            }
-                        },
-                    ]
-                }
-            }
+            query: elasticQuery,
         };
 
         debug("running query %o", body);

@@ -1,0 +1,28 @@
+# Default values for chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+replicaCount: 1
+image:
+  repository: martinhelmich/kubemail
+  tag: latest
+  pullPolicy: Never
+service:
+  name: kubemail
+  type: ClusterIP
+  http:
+    externalPort: 80
+    internalPort: 8080
+  smtp:
+    externalPort: 25
+    internalPort: 1025
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #  cpu: 100m
+  #  memory: 128Mi
+  # requests:
+  #  cpu: 100m
+  #  memory: 128Mi

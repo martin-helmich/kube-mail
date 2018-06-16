@@ -5,30 +5,56 @@
   "main": "dist/server.js",
   "repository": "https://github.com/martin-helmich/kubemail",
   "author": "Martin Helmich",
-  "license": "GPL-3",
+  "license": "GPL-3.0",
   "devDependencies": {
-    "@types/elasticsearch": "^5.0.21",
+    "@types/config": "^0.0.34",
+    "@types/elasticsearch": "^5.0.23",
     "@types/email-addresses": "^3.0.0",
     "@types/express": "^4.11.1",
+    "@types/jest": "^22.2.3",
     "@types/node": "9",
-    "@types/nodemailer": "^4.3.4",
+    "@types/nodemailer": "^4.6.0",
     "@types/uuid": "^3.4.3",
-    "typescript": "^2.7.2"
+    "jest": "^22.4.3",
+    "ts-jest": "^22.4.4",
+    "typescript": "^2.8.3"
   },
   "scripts": {
-    "compile": "tsc -p tsconfig.build.json"
+    "compile": "tsc -p tsconfig.build.json",
+    "start": "node dist/server.js",
+    "test": "jest"
   },
   "dependencies": {
+    "@mittwald/kubernetes": "^2.0.0-beta.12",
     "@types/mailparser": "^2.0.2",
     "@types/smtp-server": "^3.3.5",
+    "config": "^1.30.0",
     "debug": "^3.1.0",
-    "elasticsearch": "^14.1.0",
+    "elasticsearch": "^14.2.2",
     "email-addresses": "^3.0.1",
-    "express": "^4.16.2",
+    "express": "^4.16.3",
     "ip-address": "^5.8.9",
+    "js-yaml": "^3.11.0",
     "mailparser": "^2.2.0",
-    "nodemailer": "^4.6.0",
-    "smtp-server": "^3.4.1",
+    "nodemailer": "^4.6.4",
+    "smtp-server": "^3.4.4",
     "uuid": "^3.2.1"
+  },
+  "jest": {
+    "globals": {
+      "ts-jest": {
+        "tsConfigFile": "tsconfig.base.json"
+      }
+    },
+    "testEnvironment": "node",
+    "transform": {
+      ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "testRegex": "/tests/.*test.*$",
+    "moduleFileExtensions": [
+      "js",
+      "ts",
+      "tsx"
+    ]
   }
 }

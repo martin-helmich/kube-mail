@@ -1,4 +1,11 @@
-import {Policy, SourceReference} from "../policy/provider";
+import {Policy} from "../policy/provider";
+
+export interface Query {
+    namespace: string;
+    podName?: string;
+    labelSelector?: {[k: string]: string};
+    from: Date;
+}
 
 export interface SummarizeOptions {
     interval: string;
@@ -24,5 +31,5 @@ export const defaultSummarizeOptions: SummarizeOptions = {
 export interface StatisticsRecorder {
     setup?(): Promise<any>;
     observe(policy: Policy, sender: string, recipients: string[]): Promise<void>;
-    summarize(source: SourceReference, from: Date, opts: Partial<SummarizeOptions>): Promise<SummarizeResults>;
+    summarize(query: Query, opts: Partial<SummarizeOptions>): Promise<SummarizeResults>;
 }

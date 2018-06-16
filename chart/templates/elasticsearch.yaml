@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ template "chart.fullname" . }}-elasticsearch
+  labels:
+    app: {{ template "chart.name" . }}-elasticsearch
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: 1
+  serviceName: {{ template "chart.fullname" . }}-elasticsearch
+  selector:
+    matchLabels:
+      app: {{ template "chart.name" . }}-elasticsearch
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "chart.name" . }}-elasticsearch
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: docker.elastic.co/elasticsearch/elasticsearch:6.2.4
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9200
+            - containerPort: 9300
+          env:
+            - name: discovery.type
+              value: single-node
+          volumeMounts:
+            - name: data
+              mountPath: /usr/share/elasticsearch/data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 5Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "chart.fullname" . }}-elasticsearch
+  labels:
+    app: {{ template "chart.name" . }}-elasticsearch
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selector:
+    app: {{ template "chart.name" . }}-elasticsearch
+    release: {{ .Release.Name }}
+  ports:
+    - port: 9200
+      name: http
+    - port: 9300
+      name: transport
+  clusterIP: None

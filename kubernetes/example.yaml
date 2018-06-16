@@ -35,6 +35,9 @@ spec:
       credentials:
         name: default-smtp
         namespace: default
+  ratelimiting:
+    maximum: 30
+    period: minute
 ---
 apiVersion: kubemail.helmich.me/v1alpha1
 kind: EmailPolicy

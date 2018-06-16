@@ -1,12 +1,13 @@
 export type SourceReference = {
-    identifier: string;
+    namespace: string;
+    podName: string;
+    labels?: { [k: string]: string };
 }
 
 export type CatchPolicy = {
     id: string;
     type: "catch";
     sourceReference: SourceReference;
-    ownershipLabels?: {[k: string]: string}
 }
 
 export type ForwardPolicy = {
@@ -15,14 +16,14 @@ export type ForwardPolicy = {
     sourceReference: SourceReference;
     ratelimit?: {
         maximum: number;
-        limitPeriod: "hour"|"minute";
+        limitPeriod: "hour" | "minute";
     };
     smtp: {
         server: string;
         port: number;
         tls?: boolean;
         auth?: {
-            method: "PLAIN"|"LOGIN";
+            method: "PLAIN" | "LOGIN" | "CRAM-MD5" | "SCRAM-SHA-1";
             username: string;
             password: string;
         }
@@ -32,5 +33,5 @@ export type ForwardPolicy = {
 export type Policy = CatchPolicy | ForwardPolicy;
 
 export interface PolicyProvider {
-    getByClientIP(clientIP: string): Promise<Policy|undefined>;
+    getByClientIP(clientIP: string): Promise<Policy | undefined>;
 }

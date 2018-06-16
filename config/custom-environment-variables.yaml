@@ -1,0 +1,17 @@
+elasticsearch:
+  host: KUBEMAIL_ELASTICSEARCH_HOST
+
+sink:
+  elasticsearch:
+    index: KUBEMAIL_ELASTICSEARCH_SINK_INDEX
+
+recorder:
+  elasticsearch:
+    index: KUBEMAIL_ELASTICSEARCH_STATS_INDEX
+
+policy:
+  provider: kubernetes
+  kubernetes:
+    inCluster:
+      __name: KUBEMAIL_KUBERNETES_INCLUSTER
+      __format: json

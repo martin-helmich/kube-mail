@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mail-test
+spec:
+  containers:
+  - name: php
+    image: php:7.2-apache
+    ports:
+    - containerPort: 80
+      name: http

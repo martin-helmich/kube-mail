@@ -11,8 +11,13 @@ export interface Message {
 
     date: Date;
     mail: ParsedMail;
-    ownershipLabels?: {[k: string]: string};
     remoteAddress?: string;
+}
+
+export interface Query {
+    namespace: string;
+    podName?: string;
+    labelSelector?: {[k: string]: string};
 }
 
 export interface RetrieveOptions {
@@ -33,5 +38,5 @@ export interface Sink {
     setup?(): Promise<void>;
 
     storeMessage(source: SourceReference, message: Message): Promise<void>
-    retrieveMessages(source: SourceReference, opts?: RetrieveOptions): Promise<RetrieveResult>
+    retrieveMessages(query: Query, opts?: RetrieveOptions): Promise<RetrieveResult>
 }

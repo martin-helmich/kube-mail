@@ -20,10 +20,10 @@ export class APIServer {
         this.sink = options.sink;
         this.recorder = options.recorder;
 
-        this.app.get("/v1/sources/:sourceID/caught", async (req, res: Response) => {
-            const {sourceID} = req.params;
+        this.app.get("/v1/sources/:namespace/caught", async (req, res: Response) => {
+            const {namespace} = req.params;
             const {limit = 100, offset = 0} = req.query;
-            const result = await this.sink.retrieveMessages({identifier: sourceID}, {limit, offset});
+            const result = await this.sink.retrieveMessages({namespace}, {limit, offset});
             const messages = result.messages;
 
             res.setHeader("Content-Type", "application/json-seq");
@@ -38,11 +38,11 @@ export class APIServer {
             res.end();
         });
 
-        this.app.get("/v1/sources/:sourceID/stats", async (req: Request, res: Response) => {
-            const {sourceID} = req.params;
+        this.app.get("/v1/sources/:namespace/stats", async (req: Request, res: Response) => {
+            const {namespace} = req.params;
             const {tz: timezone = "Europe/Berlin"} = req.query;
             const from = new Date(new Date().getTime() - 86400000 * 7);
-            const result = await this.recorder.summarize({identifier: sourceID}, from, {timezone});
+            const result = await this.recorder.summarize({namespace, from}, {timezone});
 
             debug("serving result %O", result);
 
