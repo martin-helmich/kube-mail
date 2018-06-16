@@ -77,8 +77,8 @@ export class KubernetesPolicyProvider implements PolicyProvider {
                     port: smtpServer.spec.port || 587,
                     auth: {
                         method: smtpServer.spec.authType || "PLAIN",
-                        username: secretData["username"],
-                        password: secretData["password"],
+                        username: new Buffer(secretData["username"], "base64").toString("utf-8"),
+                        password: new Buffer(secretData["password"], "base64").toString("utf-8"),
                     },
                     tls: smtpServer.spec.tls === undefined ? true : smtpServer.spec.tls,
                 },
