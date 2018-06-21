@@ -6,8 +6,8 @@ import {EmailPolicy} from "./types/v1alpha1/emailpolicy";
 import {SMTPServer} from "./types/v1alpha1/smtpserver";
 import {Registry} from "prom-client";
 
-export const apiGroup = "kubemail.helmich.me/v1alpha1";
-export type APIGroup = "kubemail.helmich.me/v1alpha1";
+export const apiGroup = "kube-mail.helmich.me/v1alpha1";
+export type APIGroup = "kube-mail.helmich.me/v1alpha1";
 
 export interface KubemailV1Alpha1API {
     emailPolicies(): INamespacedResourceClient<EmailPolicy, "EmailPolicy", APIGroup>
