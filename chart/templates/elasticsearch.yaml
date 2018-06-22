@@ -1,4 +1,4 @@
-apiVersion: apps/v1
+apiVersion: apps/v1beta2
 kind: StatefulSet
 metadata:
   name: {{ template "chart.fullname" . }}-elasticsearch
@@ -20,8 +20,20 @@ spec:
         app: {{ template "chart.name" . }}-elasticsearch
         release: {{ .Release.Name }}
     spec:
+      initContainers:
+        - name: set-permissions
+          image: busybox:1.28.4
+          command: ["sh", "-c", "mkdir -p /mnt/elasticsearch && chown 1000:1000 /mnt/elasticsearch"]
+          volumeMounts:
+            - name: data
+              mountPath: /mnt
+        - name: set-sysctl
+          image: busybox:1.28.4
+          command: ["sysctl", "-w", "vm.max_map_count=262144"]
+          securityContext:
+            privileged: true
       containers:
-        - name: {{ .Chart.Name }}
+        - name: elastic
           image: docker.elastic.co/elasticsearch/elasticsearch:6.2.4
           imagePullPolicy: IfNotPresent
           ports:
@@ -33,10 +45,12 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /usr/share/elasticsearch/data
+              subPath: elasticsearch
   volumeClaimTemplates:
     - metadata:
         name: data
       spec:
+        storageClassName: {{ .Values.elasticsearch.volume.storageClassName }}
         accessModes:
           - ReadWriteOnce
         resources:

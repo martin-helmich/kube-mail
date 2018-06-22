@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ template "chart.fullname" . }}-api
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ template "chart.name" . }}
+      release: {{ .Release.Name }}
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          "kube-mail.helmich.me/api-access": "true"
+    ports:
+    - protocol: TCP
+      port: {{ .Values.service.http.internalPort }}
+  - from:
+    - podSelector:
+        matchLabels:
+          "kube-mail.helmich.me/smtp-access": "true"
+    ports:
+    - protocol: TCP
+      port: {{ .Values.service.smtp.internalPort }}
