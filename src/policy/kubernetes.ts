@@ -2,8 +2,8 @@ import {ForwardPolicy, Policy, PolicyProvider, SourceReference} from "./provider
 import {PolicyStore} from "../k8s/policy_store";
 import {PodStore} from "../k8s/pod_store";
 import {SMTPServer} from "../k8s/types/v1alpha1/smtpserver";
-import {Store} from "../k8s/informer";
 import {Secret} from "@mittwald/kubernetes/types/core/v1";
+import {Store} from "../k8s/store";
 
 const debug = require("debug")("policy:k8s");
 
@@ -54,9 +54,12 @@ export class KubernetesPolicyProvider implements PolicyProvider {
             const {smtp} = spec.sink;
 
             const smtpServerNamespace = smtp.server.namespace || policy.metadata.namespace || "";
-            const smtpServer = this.smtpServerStore.get(smtpServerNamespace, smtp.server.name);
             const smtpSecretNamespace = smtp.credentials.namespace || policy.metadata.namespace || "";
-            const smtpSecret = this.secretStore.get(smtpSecretNamespace, smtp.credentials.name);
+
+            const [smtpServer, smtpSecret] = await Promise.all([
+                this.smtpServerStore.get(smtpServerNamespace, smtp.server.name),
+                this.secretStore.get(smtpSecretNamespace, smtp.credentials.name)
+            ]);
 
             if (!smtpServer) {
                 return undefined;

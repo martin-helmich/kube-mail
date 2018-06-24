@@ -1,6 +1,6 @@
-import {Store} from "./informer";
 import {EmailPolicy} from "./types/v1alpha1/emailpolicy";
 import {MetadataObject} from "@mittwald/kubernetes/types/meta";
+import {Store} from "./store";
 const debug = require("debug")("kubemail:policystore");
 
 type Label = {key: string, value: string, combined: string};
@@ -100,7 +100,7 @@ export class PolicyStore implements Store<EmailPolicy> {
         debug("updated policy store: %O", this);
     }
 
-    public get(namespace: string, name: string): EmailPolicy | undefined {
+    public async get(namespace: string, name: string): Promise<EmailPolicy | undefined> {
         return this.policies.get(namespace + "/" + name);
     }
 

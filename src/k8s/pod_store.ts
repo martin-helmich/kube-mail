@@ -1,5 +1,5 @@
-import {Store} from "./informer";
 import {PodWithStatus} from "@mittwald/kubernetes/types/core/v1";
+import {Store} from "./store";
 
 export class PodStore implements Store<PodWithStatus> {
     private podsByIP = new Map<string, PodWithStatus>();
@@ -13,7 +13,7 @@ export class PodStore implements Store<PodWithStatus> {
         }
     }
 
-    public get(namespace: string, name: string): PodWithStatus | undefined {
+    public async get(namespace: string, name: string): Promise<PodWithStatus | undefined> {
         return this.podsByName.get(namespace + "/" + name);
     }
 

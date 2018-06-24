@@ -2,34 +2,13 @@ import {MetadataObject} from "@mittwald/kubernetes/types/meta";
 import {IResourceClient} from "@mittwald/kubernetes";
 import {LabelSelector} from "@mittwald/kubernetes/label";
 import {WatchEvent} from "@mittwald/kubernetes/types/meta/v1";
+import {InMemoryStore, Store} from "./store";
 
 const debug = require("debug")("kubemail:informer");
 
 export interface Controller {
     waitForInitialList(): Promise<void>
     stop(): void
-}
-
-export interface Store<R extends MetadataObject> {
-    store(obj: R): void
-    get(namespace: string, name: string): R|undefined
-    pull(obj: R): void
-}
-
-export class InMemoryStore<R extends MetadataObject> implements Store<R> {
-    private objects = new Map<string, R>();
-
-    public store(obj: R) {
-        this.objects.set(`${obj.metadata.namespace}/${obj.metadata.name}`, obj);
-    }
-
-    public pull(obj: R) {
-        this.objects.delete(`${obj.metadata.namespace}/${obj.metadata.name}`);
-    }
-
-    public get(namespace: string, name: string): R|undefined {
-        return this.objects.get(`${namespace}/${name}`);
-    }
 }
 
 export class Informer<R extends MetadataObject> {
