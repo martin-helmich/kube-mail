@@ -11,7 +11,7 @@ export interface SMTPUpstreamOptions {
 
 const debug = require("debug")("upstream:smtp");
 const defaultOptions: SMTPUpstreamOptions = {
-    name: "kubemail.local"
+    name: "kube-mail.local"
 };
 
 export class SMTPUpstream {

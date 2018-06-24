@@ -3,9 +3,9 @@
 # Declare variables to be passed into your templates.
 replicaCount: 1
 image:
-  repository: martinhelmich/kubemail
+  repository: quay.io/martinhelmich/kube-mail
   tag: latest
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 elasticsearch:
   image:
     repository: docker.elastic.co/elasticsearch/elasticsearch
@@ -20,6 +20,9 @@ service:
   smtp:
     externalPort: 25
     internalPort: 1025
+elasticsearch:
+  volume:
+    storageClassName: default
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
