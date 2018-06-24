@@ -22,8 +22,8 @@ spec:
     spec:
       containers:
         - name: {{ .Chart.Name }}
-          image: docker.elastic.co/elasticsearch/elasticsearch:6.2.4
-          imagePullPolicy: IfNotPresent
+          image: {{ .Values.elasticsearch.image.repository }}:{{ .Values.elasticsearch.image.tag }}
+          imagePullPolicy: {{ .Values.elasticsearch.image.imagePullPolicy }}
           ports:
             - containerPort: 9200
             - containerPort: 9300

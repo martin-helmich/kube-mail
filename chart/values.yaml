@@ -5,9 +5,14 @@ replicaCount: 1
 image:
   repository: martinhelmich/kubemail
   tag: latest
-  pullPolicy: Never
+  pullPolicy: IfNotPresent
+elasticsearch:
+  image:
+    repository: docker.elastic.co/elasticsearch/elasticsearch
+    tag: 6.2.4
+    pullPolicy: IfNotPresent
 service:
-  name: kubemail
+  name: kube-mail
   type: ClusterIP
   http:
     externalPort: 80
