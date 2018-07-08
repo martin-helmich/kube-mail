@@ -1,0 +1,94 @@
+apiVersion: "apiextensions.k8s.io/v1beta1"
+kind: "CustomResourceDefinition"
+metadata:
+  name: "emailpolicies.kube-mail.helmich.me"
+spec:
+  group: "kube-mail.helmich.me"
+  version: "v1alpha1"
+  scope: "Namespaced"
+  names:
+    plural: "emailpolicies"
+    singular: "emailpolicy"
+    kind: "EmailPolicy"
+    shortNames:
+      - epol
+  validation:
+    openAPIV3Schema:
+      required: ["spec"]
+      properties:
+        spec:
+          required: ["sink"]
+          properties:
+            default:
+              type: "boolean"
+            podSelector:
+              required: ["matchLabels"]
+              properties:
+                matchLabels:
+                  type: object
+                  additionalProperties: true
+            ratelimiting:
+              required: ["maximum"]
+              properties:
+                maximum:
+                  type: number
+                period:
+                  type: string
+                  enum: ["hour", "minute"]
+            sink:
+              oneOf:
+                - required: ["smtp"]
+                  properties:
+                    smtp:
+                      required: ["server"]
+                      properties:
+                        server:
+                          required: ["name"]
+                          properties:
+                            name:
+                              type: string
+                            namespace:
+                              type: string
+                        credentials:
+                          required: ["name"]
+                          properties:
+                            name:
+                              type: string
+                            namespace:
+                              type: string
+                - required: ["catch"]
+                  properties:
+                    catch:
+                      properties:
+                        retentionDays:
+                          type: integer
+                          minimum: 0
+---
+apiVersion: "apiextensions.k8s.io/v1beta1"
+kind: "CustomResourceDefinition"
+metadata:
+  name: "smtpservers.kube-mail.helmich.me"
+spec:
+  group: "kube-mail.helmich.me"
+  version: "v1alpha1"
+  scope: "Namespaced"
+  names:
+    plural: "smtpservers"
+    singular: "smtpserver"
+    kind: "SMTPServer"
+  validation:
+    openAPIV3Schema:
+      required: ["spec"]
+      properties:
+        spec:
+          required: ["server"]
+          server:
+            type: string
+          port:
+            type: number
+            minimum: 1
+          tls:
+            type: boolean
+          authType:
+            type: string
+            enum: ["PLAIN", "LOGIN", "CRAM-MD5", "SCRAM-SHA-1"]

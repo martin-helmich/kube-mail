@@ -1,0 +1,18 @@
+elasticsearch:
+  host: localhost:9200
+
+sink:
+  type: elasticsearch
+  elasticsearch:
+    index: caught-messages
+
+recorder:
+  type: elasticsearch
+  elasticsearch:
+    index: records
+
+policy:
+  provider: kubernetes
+  kubernetes:
+    inCluster: false
+    config: /Users/mhelmich/.kube/config

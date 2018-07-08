@@ -1,0 +1,11 @@
+EHLO example.com
+MAIL FROM: <kontakt@martin-helmich.de>
+RCPT TO: <helmbert2012@googlemail.com>
+DATA
+From: Martin Helmich <kontakt@martin-helmich.de>
+To: Martin Helmich <helmbert2012@googlemail.com>
+Subject: Kubemail test
+
+Test-Mail. Hallo.
+.
+QUIT
