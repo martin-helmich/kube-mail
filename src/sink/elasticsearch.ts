@@ -1,8 +1,6 @@
 import {Message, Query, RetrieveOptions, RetrieveResult, Sink} from "./interface";
 import {Client} from "elasticsearch";
 import {SourceReference} from "../policy/provider";
-import {TypedStream} from "../util";
-import {Stream} from "stream";
 import uuid = require("uuid");
 
 const debug = require("debug")("sink:elasticsearch");

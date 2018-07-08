@@ -12,20 +12,52 @@ export class KubernetesPolicyProvider implements PolicyProvider {
     public constructor(private podStore: PodStore,
                        private policyStore: PolicyStore,
                        private smtpServerStore: Store<SMTPServer>,
-                       private secretStore: Store<Secret>) {
+                       private secretStore: Store<Secret>,
+                       private staticPolicy: string | undefined) {
     }
 
     public async getByClientIP(clientIP: string): Promise<Policy | undefined> {
         debug("resolving policy for pod IP %s", clientIP);
 
-        const pod = this.podStore.getByPodIP(clientIP);
+        let pod = this.podStore.getByPodIP(clientIP);
         if (!pod) {
-            debug("pod not found");
-            return undefined;
+            if (this.staticPolicy) {
+                pod = {
+                    metadata: {
+                        name: "localhost",
+                        namespace: "default"
+                    },
+                    spec: {
+                        containers: []
+                    },
+                    status: {
+                        conditions: [],
+                        hostIP: "127.0.0.1",
+                        message: "Test",
+                        podIP: "127.0.0.1",
+                        phase: "Running",
+                        qosClass: "Guaranteed",
+                        reason: "no reason",
+                        startTime: new Date().toISOString(),
+                    }
+                }
+            } else {
+                debug("pod not found");
+                return undefined;
+            }
         }
 
         const {namespace = "", labels = {}} = pod.metadata;
         const policies = this.policyStore.match(namespace, labels);
+
+        if (this.staticPolicy !== undefined) {
+            const [ns, n] = this.staticPolicy.split("/");
+            const p = await this.policyStore.get(ns, n);
+
+            if (p) {
+                policies.push(p)
+            }
+        }
 
         if (policies.length === 0) {
             debug("no policies defined");
@@ -47,6 +79,7 @@ export class KubernetesPolicyProvider implements PolicyProvider {
                 type: "catch",
                 id: policy.metadata.namespace + "/" + policy.metadata.name,
                 sourceReference,
+                retention: spec.sink.catch.retentionDays,
             };
         }
 

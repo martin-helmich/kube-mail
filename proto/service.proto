@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package kubemail;
+
+service KubeMail {
+
+    rpc ListCaughtEmails(ListCaughtEmailsRequest) returns (ListCaughtEmailsResponse);
+    rpc WatchCaughtEmails(ListCaughtEmailsRequest) returns (stream Email);
+
+}
+
+message ListCaughtEmailsRequest {
+    string namespace = 1;
+    int32 limit = 2;
+    int32 offset = 3;
+}
+
+message ListCaughtEmailsResponse {
+    int32 limit = 1;
+    int32 offset = 2;
+    int32 totalCount = 3;
+
+    repeated Email email = 4;
+}
+
+message Email {
+    message EmailEnvelope {
+        string mailFrom = 1;
+        repeated string rcptTo = 2;
+    }
+
+    message EmailMessage {
+        message Content {
+            string text = 1;
+            string html = 2;
+        }
+
+        message Header {
+            string name = 1;
+            string value = 2;
+        }
+
+        string subject = 1;
+        Content body = 2;
+
+        repeated string to = 3;
+        repeated string from = 4;
+        repeated string cc = 5;
+        repeated string bcc = 6;
+
+        repeated Header header = 7;
+    }
+
+    EmailEnvelope envelope = 1;
+    int64 date = 2;
+    EmailMessage message = 3;
+}

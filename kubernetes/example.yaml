@@ -1,4 +1,4 @@
-apiVersion: kubemail.helmich.me/v1alpha1
+apiVersion: kube-mail.helmich.me/v1alpha1
 kind: SMTPServer
 metadata:
   name: default-smtp
@@ -18,7 +18,7 @@ data:
   username: dGVzdA==
   password: dGVzdA==
 ---
-apiVersion: kubemail.helmich.me/v1alpha1
+apiVersion: kube-mail.helmich.me/v1alpha1
 kind: EmailPolicy
 metadata:
   name: 1and1-smtp
@@ -39,7 +39,7 @@ spec:
     maximum: 30
     period: minute
 ---
-apiVersion: kubemail.helmich.me/v1alpha1
+apiVersion: kube-mail.helmich.me/v1alpha1
 kind: EmailPolicy
 metadata:
   name: default

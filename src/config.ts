@@ -14,12 +14,22 @@ export type SinkConfig = {
     elasticsearch: {
         index: string;
     };
+} | {
+    type: "mongodb";
+    mongodb: {
+        collection: string;
+    }
 };
 
 export type RecorderConfig = {
     type: "elasticsearch",
     elasticsearch: {
         index: string
+    }
+} | {
+    type: "mongodb";
+    mongodb: {
+        collection: string;
     }
 };
 

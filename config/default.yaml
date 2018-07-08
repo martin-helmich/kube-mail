@@ -1,18 +1,28 @@
 elasticsearch:
   host: localhost:9200
 
+mongodb:
+  url: mongodb://localhost:27017/kubemail
+
 sink:
-  type: elasticsearch
-  elasticsearch:
-    index: caught-messages
+  #type: elasticsearch
+  #elasticsearch:
+  #  index: caught-messages
+  type: mongodb
+  mongodb:
+    collection: caughtMessages
 
 recorder:
-  type: elasticsearch
-  elasticsearch:
-    index: records
+  #type: elasticsearch
+  #elasticsearch:
+  #  index: records
+  type: mongodb
+  mongodb:
+    collection: statistics
 
 policy:
   provider: kubernetes
   kubernetes:
     inCluster: false
     config: /Users/mhelmich/.kube/config
+    static: ~

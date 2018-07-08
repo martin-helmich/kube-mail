@@ -8,6 +8,7 @@ export type CatchPolicy = {
     id: string;
     type: "catch";
     sourceReference: SourceReference;
+    retention?: number
 }
 
 export type ForwardPolicy = {

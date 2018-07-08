@@ -69,7 +69,7 @@ export class SMTPBackend {
 
                 callback();
 
-                await this.sink.storeMessage(policy.sourceReference, msg);
+                await this.sink.storeMessage(policy.sourceReference, msg, policy);
             } else {
                 // noinspection JSIgnoredPromiseFromCall
                 this.recorder.observe(policy, mailFrom.address, rcptTo.map(r => r.address));

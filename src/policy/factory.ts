@@ -5,6 +5,7 @@ import {PodStore} from "../k8s/pod_store";
 import {IKubernetesAPI} from "@mittwald/kubernetes";
 import {KubemailCustomResourceAPI} from "../k8s/api";
 import {CachingLookupStore} from "../k8s/store";
+import * as config from "config";
 
 export class KubernetesPolicyProviderFactory {
     public constructor(private api: IKubernetesAPI & KubemailCustomResourceAPI) {
@@ -33,7 +34,7 @@ export class KubernetesPolicyProviderFactory {
         ]).then(() => {});
 
         return [
-            new KubernetesPolicyProvider(podStore, emailPolicyStore, smtpServerInformer.store, secretStore),
+            new KubernetesPolicyProvider(podStore, emailPolicyStore, smtpServerInformer.store, secretStore, config.get("policy.kubernetes.static")),
             initialized,
         ];
     }
