@@ -1,12 +1,12 @@
 import {Server, ServerCredentials, ServerUnaryCall, ServerWriteableStream, ServiceError} from "grpc";
-import {Email, ListCaughtEmailsRequest, ListCaughtEmailsResponse} from "./proto/service_pb";
-import {Sink} from "../sink/interface";
+import {Email, ListCaughtEmailsRequest, ListCaughtEmailsResponse, WatchCaughtEmailsRequest} from "./proto/service_pb";
+import {RealtimeSink, Sink} from "../sink/interface";
 import {StatisticsRecorder} from "../stats/recorder";
 import EmailEnvelope = Email.EmailEnvelope;
 import EmailMessage = Email.EmailMessage;
 import Content = Email.EmailMessage.Content;
 import {EmailAddress} from "mailparser";
-import {mapEmailAddressToString, mapEmailHeaders} from "./mapping";
+import {mapEmailAddressToString, mapEmailHeaders, mapMessage} from "./mapping";
 
 const debug = require("debug")("kubemail:grpc");
 const service = require("./proto/service_grpc_pb");
@@ -49,47 +49,44 @@ export class GRPCServer {
                 response.setLimit(limit);
                 response.setOffset(offset);
                 response.setTotalcount(result.totalCount);
-                response.setEmailList(result.messages.map(m => {
-                    const email = new Email();
-                    const env = new EmailEnvelope();
-                    const msg = new EmailMessage();
-                    const msgBody = new Content();
-
-                    env.setMailfrom(m.envelope.mailFrom);
-                    env.setRcpttoList(m.envelope.rcptTo);
-
-                    msgBody.setText(m.mail.text);
-                    if (typeof m.mail.html === "string") {
-                        msgBody.setHtml(m.mail.html);
-                    }
-
-                    msg.setSubject(m.mail.subject);
-                    msg.setBody(msgBody);
-                    msg.setToList(m.mail.to.value.map(mapEmailAddressToString));
-                    msg.setFromList(m.mail.from.value.map(mapEmailAddressToString));
-
-                    if (m.mail.cc) {
-                        msg.setCcList(m.mail.cc.value.map(mapEmailAddressToString));
-                    }
-
-                    if (m.mail.bcc) {
-                        msg.setBccList(m.mail.bcc.value.map(mapEmailAddressToString));
-                    }
-
-                    msg.setHeaderList(mapEmailHeaders(m.mail.headers));
-
-                    email.setEnvelope(env);
-                    email.setMessage(msg);
-                    email.setDate(m.date.getDate());
-
-                    return email;
-                }));
+                response.setEmailList(result.messages.map(mapMessage));
 
                 cb(null, response);
             },
 
-            watchCaughtEmails(call: ServerWriteableStream<ListCaughtEmailsRequest>): void {
+            watchCaughtEmails: (call: ServerWriteableStream<WatchCaughtEmailsRequest>): void => {
+                const namespace = call.request.getNamespace();
+                const onlyNew = call.request.getOnlynew();
 
+                if (!namespace) {
+                    call.emit("error", {
+                        name: "MissingArgument",
+                        message: "you must supply a 'namespace' argument"
+                    });
+                    return;
+                }
+
+                if (!("retrieveMessageStream" in this.sink)) {
+                    return;
+                }
+
+                const stream = (this.sink as RealtimeSink).retrieveMessageStream({namespace}, {onlyNew});
+
+                stream.on("data", msg => {
+                    call.write(mapMessage(msg));
+                });
+
+                stream.on("end", () => {
+                    call.emit("end");
+                });
+
+                stream.on("error", (err: Error) => {
+                    debug("error while streaming: %o", err);
+                    call.emit("error", {
+                        name: "InternalError",
+                        message: "an error occurred while streaming messages"
+                    });
+                })
             },
         });
 

@@ -25,6 +25,10 @@ export interface RetrieveOptions {
     offset?: number;
 }
 
+export interface RetrieveStreamOptions {
+    onlyNew?: boolean;
+}
+
 export interface RetrieveResult {
     messages: Message[];
     totalCount: number;
@@ -42,5 +46,5 @@ export interface Sink {
 }
 
 export interface RealtimeSink extends Sink {
-    retrieveMessageStream(query: Query): TypedStream<Message>;
+    retrieveMessageStream(query: Query, opts?: RetrieveStreamOptions): TypedStream<Message>;
 }

@@ -5,7 +5,7 @@ package kubemail;
 service KubeMail {
 
     rpc ListCaughtEmails(ListCaughtEmailsRequest) returns (ListCaughtEmailsResponse);
-    rpc WatchCaughtEmails(ListCaughtEmailsRequest) returns (stream Email);
+    rpc WatchCaughtEmails(WatchCaughtEmailsRequest) returns (stream Email);
 
 }
 
@@ -13,6 +13,11 @@ message ListCaughtEmailsRequest {
     string namespace = 1;
     int32 limit = 2;
     int32 offset = 3;
+}
+
+message WatchCaughtEmailsRequest {
+    string namespace = 1;
+    bool onlyNew = 2;
 }
 
 message ListCaughtEmailsResponse {

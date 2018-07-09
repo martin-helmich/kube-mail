@@ -1,4 +1,4 @@
-import {Message, Query, RealtimeSink, RetrieveOptions, RetrieveResult} from "./interface";
+import {Message, Query, RealtimeSink, RetrieveOptions, RetrieveResult, RetrieveStreamOptions} from "./interface";
 import {CatchPolicy, SourceReference} from "../policy/provider";
 import {TypedStream} from "../util";
 import {Collection} from "mongodb";
@@ -67,14 +67,57 @@ export class MongodbSink implements RealtimeSink {
         }
     }
 
-    public retrieveMessageStream(query: Query): TypedStream<Message> {
-        const stream = new Stream();
+    public retrieveMessageStream(query: Query, opts?: RetrieveStreamOptions): TypedStream<Message> {
+        const {onlyNew = false} = opts || {};
+        const q: any = {"source.namespace": query.namespace};
 
-        setImmediate(() => {
-            stream.emit("end");
-        });
+        if (query.podName) {
+            q["source.podName"] = query.podName;
+        }
 
-        return stream;
+        if (query.labelSelector) {
+            for (const k of Object.keys(query.labelSelector)) {
+                const mapped = k.replace(".", "~");
+                q[`source.labels.${mapped}`] = query.labelSelector[k];
+            }
+        }
+
+        const outputStream = new Stream();
+
+        const streamChanges = () => {
+            const changeStream = this.collection.watch([
+                {$match: q}
+            ], {fullDocument: "updateLookup"});
+
+            changeStream.next((err, next) => {
+                if (err) {
+                    outputStream.emit("error", err);
+                    return;
+                }
+
+                if (next.operationType === "insert") {
+                    outputStream.emit("data", next.fullDocument);
+                }
+
+                if (next.operationType === "invalidate") {
+                    outputStream.emit("end");
+                }
+            });
+        };
+
+        if (!onlyNew) {
+            const items = this.collection.find(q).stream();
+
+            items.on("data", d => outputStream.emit("data", d));
+            items.on("error", err => outputStream.emit("err", err));
+            items.on("end", () => {
+                streamChanges();
+            })
+        } else {
+            streamChanges();
+        }
+
+        return outputStream;
     }
 
 }

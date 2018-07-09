@@ -31,6 +31,30 @@ export namespace ListCaughtEmailsRequest {
   }
 }
 
+export class WatchCaughtEmailsRequest extends jspb.Message {
+  getNamespace(): string;
+  setNamespace(value: string): void;
+
+  getOnlynew(): boolean;
+  setOnlynew(value: boolean): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): WatchCaughtEmailsRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: WatchCaughtEmailsRequest): WatchCaughtEmailsRequest.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: WatchCaughtEmailsRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): WatchCaughtEmailsRequest;
+  static deserializeBinaryFromReader(message: WatchCaughtEmailsRequest, reader: jspb.BinaryReader): WatchCaughtEmailsRequest;
+}
+
+export namespace WatchCaughtEmailsRequest {
+  export type AsObject = {
+    namespace: string,
+    onlynew: boolean,
+  }
+}
+
 export class ListCaughtEmailsResponse extends jspb.Message {
   getLimit(): number;
   setLimit(value: number): void;
