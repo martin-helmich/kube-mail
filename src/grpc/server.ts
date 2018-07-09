@@ -1,12 +1,15 @@
 import {Server, ServerCredentials, ServerUnaryCall, ServerWriteableStream, ServiceError} from "grpc";
-import {Email, ListCaughtEmailsRequest, ListCaughtEmailsResponse, WatchCaughtEmailsRequest} from "./proto/service_pb";
+import {
+    GetSummaryRequest,
+    ListCaughtEmailsRequest,
+    ListCaughtEmailsResponse,
+    Summary,
+    WatchCaughtEmailsRequest
+} from "./proto/service_pb";
 import {RealtimeSink, Sink} from "../sink/interface";
 import {StatisticsRecorder} from "../stats/recorder";
-import EmailEnvelope = Email.EmailEnvelope;
-import EmailMessage = Email.EmailMessage;
-import Content = Email.EmailMessage.Content;
-import {EmailAddress} from "mailparser";
-import {mapEmailAddressToString, mapEmailHeaders, mapMessage} from "./mapping";
+import {mapMessage} from "./mapping";
+import Item = Summary.Item;
 
 const debug = require("debug")("kubemail:grpc");
 const service = require("./proto/service_grpc_pb");
@@ -31,6 +34,44 @@ export class GRPCServer {
         const server = new Server();
 
         server.addService(service.KubeMailService, {
+            getSummary: async (call: ServerUnaryCall<GetSummaryRequest>, cb: (err: ServiceError|null, res: Summary|null) => any): Promise<void> => {
+                const namespace = call.request.getNamespace();
+                const fromTimestamp = call.request.getFromTimestamp();
+                const from = fromTimestamp ? new Date(fromTimestamp * 1000) : new Date(new Date().getTime() - 86400000);
+
+                if (!namespace) {
+                    return cb({name: "MissingArgument", message: "you must supply a 'namespace' argument"}, null);
+                }
+
+                const report = await this.recorder.summarize({namespace, from}, {});
+                const result = new Summary();
+
+                result.setItemList(report.messagesOverTime.map(moi => {
+                    const item = new Item();
+
+                    item.setTimestamp(moi.time);
+                    item.setMessageCount(moi.count);
+
+                    return item;
+                }));
+
+                const rm = result.getRecipientMap();
+                const sm = result.getSenderMap();
+
+                for (const recipient of Object.keys(report.recipients)) {
+                    rm.set(recipient, report.recipients[recipient]);
+                }
+
+                for (const sender of Object.keys(report.senders)) {
+                    sm.set(sender, report.senders[sender]);
+                }
+
+                debug("original summary: %o", report);
+                debug("sending summary %o", result.toObject());
+
+                cb(null, result);
+            },
+
             listCaughtEmails: async (call: ServerUnaryCall<ListCaughtEmailsRequest>, cb: (err: ServiceError|null, res: ListCaughtEmailsResponse|null) => any): Promise<void> => {
                 const limit = call.request.getLimit() || 100;
                 const offset = call.request.getOffset() || 0;
@@ -48,7 +89,7 @@ export class GRPCServer {
 
                 response.setLimit(limit);
                 response.setOffset(offset);
-                response.setTotalcount(result.totalCount);
+                response.setTotalCount(result.totalCount);
                 response.setEmailList(result.messages.map(mapMessage));
 
                 cb(null, response);
@@ -56,7 +97,7 @@ export class GRPCServer {
 
             watchCaughtEmails: (call: ServerWriteableStream<WatchCaughtEmailsRequest>): void => {
                 const namespace = call.request.getNamespace();
-                const onlyNew = call.request.getOnlynew();
+                const onlyNew = call.request.getOnlyNew();
 
                 if (!namespace) {
                     call.emit("error", {

@@ -68,8 +68,8 @@ export const mapMessage = (m: Message) => {
     const msg = new EmailMessage();
     const msgBody = new Content();
 
-    env.setMailfrom(m.envelope.mailFrom);
-    env.setRcpttoList(m.envelope.rcptTo);
+    env.setMailFrom(m.envelope.mailFrom);
+    env.setRcptToList(m.envelope.rcptTo);
 
     msgBody.setText(m.mail.text);
     if (typeof m.mail.html === "string") {
@@ -93,7 +93,7 @@ export const mapMessage = (m: Message) => {
 
     email.setEnvelope(env);
     email.setMessage(msg);
-    email.setDate(m.date.getDate());
+    email.setDate(Math.floor(m.date.getTime() / 1000));
 
     return email;
 };

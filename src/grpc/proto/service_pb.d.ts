@@ -3,6 +3,82 @@
 
 import * as jspb from "google-protobuf";
 
+export class GetSummaryRequest extends jspb.Message {
+  getNamespace(): string;
+  setNamespace(value: string): void;
+
+  getFromTimestamp(): number;
+  setFromTimestamp(value: number): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetSummaryRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetSummaryRequest): GetSummaryRequest.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: GetSummaryRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetSummaryRequest;
+  static deserializeBinaryFromReader(message: GetSummaryRequest, reader: jspb.BinaryReader): GetSummaryRequest;
+}
+
+export namespace GetSummaryRequest {
+  export type AsObject = {
+    namespace: string,
+    fromTimestamp: number,
+  }
+}
+
+export class Summary extends jspb.Message {
+  clearItemList(): void;
+  getItemList(): Array<Summary.Item>;
+  setItemList(value: Array<Summary.Item>): void;
+  addItem(value?: Summary.Item, index?: number): Summary.Item;
+
+  getRecipientMap(): jspb.Map<string, number>;
+  clearRecipientMap(): void;
+  getSenderMap(): jspb.Map<string, number>;
+  clearSenderMap(): void;
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Summary.AsObject;
+  static toObject(includeInstance: boolean, msg: Summary): Summary.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: Summary, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Summary;
+  static deserializeBinaryFromReader(message: Summary, reader: jspb.BinaryReader): Summary;
+}
+
+export namespace Summary {
+  export type AsObject = {
+    itemList: Array<Summary.Item.AsObject>,
+    recipientMap: Array<[string, number]>,
+    senderMap: Array<[string, number]>,
+  }
+
+  export class Item extends jspb.Message {
+    getTimestamp(): number;
+    setTimestamp(value: number): void;
+
+    getMessageCount(): number;
+    setMessageCount(value: number): void;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Item.AsObject;
+    static toObject(includeInstance: boolean, msg: Item): Item.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: Item, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Item;
+    static deserializeBinaryFromReader(message: Item, reader: jspb.BinaryReader): Item;
+  }
+
+  export namespace Item {
+    export type AsObject = {
+      timestamp: number,
+      messageCount: number,
+    }
+  }
+}
+
 export class ListCaughtEmailsRequest extends jspb.Message {
   getNamespace(): string;
   setNamespace(value: string): void;
@@ -35,8 +111,8 @@ export class WatchCaughtEmailsRequest extends jspb.Message {
   getNamespace(): string;
   setNamespace(value: string): void;
 
-  getOnlynew(): boolean;
-  setOnlynew(value: boolean): void;
+  getOnlyNew(): boolean;
+  setOnlyNew(value: boolean): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): WatchCaughtEmailsRequest.AsObject;
@@ -51,7 +127,7 @@ export class WatchCaughtEmailsRequest extends jspb.Message {
 export namespace WatchCaughtEmailsRequest {
   export type AsObject = {
     namespace: string,
-    onlynew: boolean,
+    onlyNew: boolean,
   }
 }
 
@@ -62,8 +138,8 @@ export class ListCaughtEmailsResponse extends jspb.Message {
   getOffset(): number;
   setOffset(value: number): void;
 
-  getTotalcount(): number;
-  setTotalcount(value: number): void;
+  getTotalCount(): number;
+  setTotalCount(value: number): void;
 
   clearEmailList(): void;
   getEmailList(): Array<Email>;
@@ -84,7 +160,7 @@ export namespace ListCaughtEmailsResponse {
   export type AsObject = {
     limit: number,
     offset: number,
-    totalcount: number,
+    totalCount: number,
     emailList: Array<Email.AsObject>,
   }
 }
@@ -121,13 +197,13 @@ export namespace Email {
   }
 
   export class EmailEnvelope extends jspb.Message {
-    getMailfrom(): string;
-    setMailfrom(value: string): void;
+    getMailFrom(): string;
+    setMailFrom(value: string): void;
 
-    clearRcpttoList(): void;
-    getRcpttoList(): Array<string>;
-    setRcpttoList(value: Array<string>): void;
-    addRcptto(value: string, index?: number): string;
+    clearRcptToList(): void;
+    getRcptToList(): Array<string>;
+    setRcptToList(value: Array<string>): void;
+    addRcptTo(value: string, index?: number): string;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): EmailEnvelope.AsObject;
@@ -141,8 +217,8 @@ export namespace Email {
 
   export namespace EmailEnvelope {
     export type AsObject = {
-      mailfrom: string,
-      rcpttoList: Array<string>,
+      mailFrom: string,
+      rcptToList: Array<string>,
     }
   }
 
