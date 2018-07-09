@@ -86,14 +86,18 @@ export class MongodbSink implements RealtimeSink {
 
         const streamChanges = () => {
             const changeStream = this.collection.watch([
-                {$match: q}
+                {$match: {"fullDocument.source.namespace": query.namespace}}
             ], {fullDocument: "updateLookup"});
 
             changeStream.next((err, next) => {
                 if (err) {
+                    debug("error on change stream: %o", err);
+
                     outputStream.emit("error", err);
                     return;
                 }
+
+                debug("received change: %o", next);
 
                 if (next.operationType === "insert") {
                     outputStream.emit("data", next.fullDocument);
@@ -111,6 +115,7 @@ export class MongodbSink implements RealtimeSink {
             items.on("data", d => outputStream.emit("data", d));
             items.on("error", err => outputStream.emit("err", err));
             items.on("end", () => {
+                debug("find has ended; now streaming changes");
                 streamChanges();
             })
         } else {

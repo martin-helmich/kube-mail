@@ -66,6 +66,8 @@ export class GRPCServer {
                     return;
                 }
 
+                debug("streaming messages for namespace %o", namespace);
+
                 if (!("retrieveMessageStream" in this.sink)) {
                     return;
                 }
@@ -73,11 +75,16 @@ export class GRPCServer {
                 const stream = (this.sink as RealtimeSink).retrieveMessageStream({namespace}, {onlyNew});
 
                 stream.on("data", msg => {
-                    call.write(mapMessage(msg));
+                    const mapped = mapMessage(msg);
+                    debug("pushing message %o (orig %o) to stream", mapped, msg);
+
+                    call.write(mapped);
                 });
 
                 stream.on("end", () => {
-                    call.emit("end");
+                    debug("stream has ended");
+
+                    call.end();
                 });
 
                 stream.on("error", (err: Error) => {

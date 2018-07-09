@@ -21,5 +21,6 @@ services:
     image: mongo:4.0.0
     ports:
       - 27017:27017
+    command: "--replSet rs0"
     networks:
       - kubemail

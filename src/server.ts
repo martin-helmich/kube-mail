@@ -19,12 +19,13 @@ console.log("starting");
 
 (async () => {
     const client = new Client({host: config.get("elasticsearch.host")});
-    const mongo = (await MongoClient.connect(config.get("mongodb.url"), {useNewUrlParser: true})).db();
+    const mongo = (await MongoClient.connect(config.get("mongodb.url"), {useNewUrlParser: true}));
+    const db = mongo.db();
 
     const debug = require("debug")("kubemail:main");
     const parser = new ParserImpl();
-    const sink = buildSinkFromConfig(config.get<SinkConfig>("sink"), client, mongo);
-    const recorder = buildRecorderFromConfig(config.get<RecorderConfig>("recorder"), client, mongo);
+    const sink = buildSinkFromConfig(config.get<SinkConfig>("sink"), client, db);
+    const recorder = buildRecorderFromConfig(config.get<RecorderConfig>("recorder"), client, db);
 
     if (sink.setup) {
         debug("setting up sink");
