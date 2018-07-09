@@ -27,7 +27,7 @@
     "compile": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
     "test": "jest",
-    "generate": "./node_modules/.bin/grpc_tools_node_protoc --js_out=import_style=commonjs,binary:dist/grpc --grpc_out=dist/grpc --plugin=\"protoc-gen-ts=./node_modules/.bin/protoc-gen-ts\" --ts_out=src/grpc proto/service.proto"
+    "generate": "mkdir -p dist/grpc && ./node_modules/.bin/grpc_tools_node_protoc --js_out=import_style=commonjs,binary:dist/grpc --grpc_out=dist/grpc --plugin=\"protoc-gen-ts=./node_modules/.bin/protoc-gen-ts\" --ts_out=src/grpc proto/service.proto"
   },
   "dependencies": {
     "@mittwald/kubernetes": "^2.0.0",
