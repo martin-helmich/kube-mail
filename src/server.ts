@@ -62,8 +62,15 @@ console.log("starting");
     await providerInitialized;
 
     monitoringServer.listen(9100);
-    apiServer.listen(8080);
-    grpcServer.listen(8088);
+
+    if (config.get<boolean>("rest.enabled")) {
+        apiServer.listen(config.get<number>("rest.port"));
+    }
+
+    if (config.get<boolean>("grpc.enabled")) {
+        grpcServer.listen(config.get<number>("grpc.port"));
+    }
+
     smtpServer.listen(1025);
 })().catch(err => {
     console.error(err);

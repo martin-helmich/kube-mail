@@ -4,6 +4,14 @@ elasticsearch:
 mongodb:
   url: mongodb://localhost:27017/kubemail
 
+rest:
+  enabled: false
+  port: 8080
+
+grpc:
+  enabled: true
+  port: 8080
+
 sink:
   #type: elasticsearch
   #elasticsearch:

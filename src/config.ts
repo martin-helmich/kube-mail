@@ -1,8 +1,16 @@
 export type Config = {
+    rest: APIConfig;
+    grpc: APIConfig;
+
     elasticsearch: ElasticSearchConfig;
     sink: SinkConfig;
     recorder: RecorderConfig;
     policy: PolicyConfig;
+}
+
+export type APIConfig = {
+    enabled: boolean;
+    port: number;
 }
 
 export type ElasticSearchConfig = {
