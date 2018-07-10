@@ -50,7 +50,7 @@ export class KubernetesPolicyProvider implements PolicyProvider {
         const {namespace = "", labels = {}} = pod.metadata;
         const policies = this.policyStore.match(namespace, labels);
 
-        if (this.staticPolicy !== undefined) {
+        if (this.staticPolicy) {
             const [ns, n] = this.staticPolicy.split("/");
             const p = await this.policyStore.get(ns, n);
 
