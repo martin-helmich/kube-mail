@@ -1,3 +1,4 @@
+{{- if .Values.rbac.enabled }}
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -63,3 +64,4 @@ roleRef:
   kind: ClusterRole
   name: kube-mail:policies
   apiGroup: rbac.authorization.k8s.io
+{{- end }}

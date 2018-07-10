@@ -6,6 +6,8 @@ image:
   repository: quay.io/martinhelmich/kube-mail
   tag: latest
   pullPolicy: Always
+rbac:
+  enabled: true
 grpc:
   enabled: true
   service:
