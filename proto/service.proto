@@ -47,6 +47,12 @@ message ListCaughtEmailsResponse {
 }
 
 message Email {
+    message Source {
+        string pod_name = 1;
+        string namespace = 2;
+        map<string, string> label = 3;
+    }
+
     message EmailEnvelope {
         string mail_from = 1;
         repeated string rcpt_to = 2;
@@ -74,7 +80,9 @@ message Email {
         repeated Header header = 7;
     }
 
+    Source source = 4;
     EmailEnvelope envelope = 1;
     int64 date = 2;
+
     EmailMessage message = 3;
 }

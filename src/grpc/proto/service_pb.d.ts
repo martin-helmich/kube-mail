@@ -166,6 +166,11 @@ export namespace ListCaughtEmailsResponse {
 }
 
 export class Email extends jspb.Message {
+  hasSource(): boolean;
+  clearSource(): void;
+  getSource(): Email.Source | undefined;
+  setSource(value?: Email.Source): void;
+
   hasEnvelope(): boolean;
   clearEnvelope(): void;
   getEnvelope(): Email.EmailEnvelope | undefined;
@@ -191,9 +196,37 @@ export class Email extends jspb.Message {
 
 export namespace Email {
   export type AsObject = {
+    source?: Email.Source.AsObject,
     envelope?: Email.EmailEnvelope.AsObject,
     date: number,
     message?: Email.EmailMessage.AsObject,
+  }
+
+  export class Source extends jspb.Message {
+    getPodName(): string;
+    setPodName(value: string): void;
+
+    getNamespace(): string;
+    setNamespace(value: string): void;
+
+    getLabelMap(): jspb.Map<string, string>;
+    clearLabelMap(): void;
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): Source.AsObject;
+    static toObject(includeInstance: boolean, msg: Source): Source.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: Source, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): Source;
+    static deserializeBinaryFromReader(message: Source, reader: jspb.BinaryReader): Source;
+  }
+
+  export namespace Source {
+    export type AsObject = {
+      podName: string,
+      namespace: string,
+      labelMap: Array<[string, string]>,
+    }
   }
 
   export class EmailEnvelope extends jspb.Message {

@@ -1,10 +1,12 @@
 import {EmailAddress, Headers, HeaderValue} from "mailparser";
 import {Email} from "./proto/service_pb";
 import Header = Email.EmailMessage.Header;
-import {Message} from "../sink/interface";
+import {Message, StoredMessage} from "../sink/interface";
 import EmailEnvelope = Email.EmailEnvelope;
 import EmailMessage = Email.EmailMessage;
 import Content = Email.EmailMessage.Content;
+import Source = Email.Source;
+import {SourceReference} from "../policy/provider";
 
 const makeHeader = (name: string, value: string): Header => {
     const header = new Header();
@@ -62,11 +64,21 @@ export const mapEmailHeaders = (a: Headers): Array<Header> => {
     return headers;
 };
 
-export const mapMessage = (m: Message) => {
+export const mapMessage = (m: StoredMessage) => {
     const email = new Email();
+    const source = new Source();
     const env = new EmailEnvelope();
     const msg = new EmailMessage();
     const msgBody = new Content();
+
+    source.setNamespace(m.source.namespace);
+    source.setPodName(m.source.podName);
+
+    if (m.source.labels) {
+        for (const k of Object.keys(m.source.labels)) {
+            source.getLabelMap().set(k, m.source.labels[k]);
+        }
+    }
 
     env.setMailFrom(m.envelope.mailFrom);
     env.setRcptToList(m.envelope.rcptTo);
@@ -91,6 +103,7 @@ export const mapMessage = (m: Message) => {
 
     msg.setHeaderList(mapEmailHeaders(m.mail.headers));
 
+    email.setSource(source);
     email.setEnvelope(env);
     email.setMessage(msg);
     email.setDate(Math.floor(m.date.getTime() / 1000));

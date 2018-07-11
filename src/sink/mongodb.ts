@@ -1,4 +1,7 @@
-import {Message, Query, RealtimeSink, RetrieveOptions, RetrieveResult, RetrieveStreamOptions} from "./interface";
+import {
+    Message, Query, RealtimeSink, RetrieveOptions, RetrieveResult, RetrieveStreamOptions,
+    StoredMessage
+} from "./interface";
 import {CatchPolicy, SourceReference} from "../policy/provider";
 import {TypedStream} from "../util";
 import {Collection} from "mongodb";
@@ -33,7 +36,7 @@ export class MongodbSink implements RealtimeSink {
             sourceCopy.labels = mapLabelsForMongodb(sourceCopy.labels);
         }
 
-        const doc: any = {source: sourceCopy, ...message};
+        const doc: StoredMessage = {source: sourceCopy, ...message};
 
         if (policy.retention !== undefined) {
             doc.expires = new Date(new Date().getTime() + policy.retention * 86400000);
@@ -67,18 +70,19 @@ export class MongodbSink implements RealtimeSink {
         }
     }
 
-    public retrieveMessageStream(query: Query, opts?: RetrieveStreamOptions): TypedStream<Message> {
+    public retrieveMessageStream(query: Query, opts?: RetrieveStreamOptions): TypedStream<StoredMessage> {
         const {onlyNew = false} = opts || {};
         const q: any = {"source.namespace": query.namespace};
+        const streamQ: any = {"fullDocument.source.namespace": query.namespace};
 
         if (query.podName) {
-            q["source.podName"] = query.podName;
+            q["source.podName"] = streamQ["fullDocument.source.podName"] = query.podName;
         }
 
         if (query.labelSelector) {
             for (const k of Object.keys(query.labelSelector)) {
                 const mapped = k.replace(".", "~");
-                q[`source.labels.${mapped}`] = query.labelSelector[k];
+                q[`source.labels.${mapped}`] = streamQ[`fullDocument.source.labels.${mapped}`] = query.labelSelector[k];
             }
         }
 
@@ -86,7 +90,7 @@ export class MongodbSink implements RealtimeSink {
 
         const streamChanges = () => {
             const changeStream = this.collection.watch([
-                {$match: {"fullDocument.source.namespace": query.namespace}}
+                {$match: streamQ}
             ], {fullDocument: "updateLookup"});
 
             changeStream.next((err, next) => {

@@ -14,6 +14,11 @@ export interface Message {
     remoteAddress?: string;
 }
 
+export interface StoredMessage extends Message {
+    source: SourceReference;
+    expires?: Date;
+}
+
 export interface Query {
     namespace: string;
     podName?: string;
@@ -30,7 +35,7 @@ export interface RetrieveStreamOptions {
 }
 
 export interface RetrieveResult {
-    messages: Message[];
+    messages: StoredMessage[];
     totalCount: number;
 }
 
@@ -46,5 +51,5 @@ export interface Sink {
 }
 
 export interface RealtimeSink extends Sink {
-    retrieveMessageStream(query: Query, opts?: RetrieveStreamOptions): TypedStream<Message>;
+    retrieveMessageStream(query: Query, opts?: RetrieveStreamOptions): TypedStream<StoredMessage>;
 }
