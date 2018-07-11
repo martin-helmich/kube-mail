@@ -12,7 +12,7 @@ spec:
   ingress:
   {{- if .Values.rest.enabled }}
   - from:
-    - podSelector:
+    - namespaceSelector:
         matchLabels:
           "kube-mail.helmich.me/api-access": "true"
     ports:
@@ -21,7 +21,7 @@ spec:
   {{- end }}
   {{- if .Values.grpc.enabled }}
   - from:
-    - podSelector:
+    - namespaceSelector:
         matchLabels:
           "kube-mail.helmich.me/api-access": "true"
     ports:
@@ -29,7 +29,7 @@ spec:
       port: {{ .Values.grpc.service.internalPort }}
   {{- end }}
   - from:
-    - podSelector:
+    - namespaceSelector:
         matchLabels:
           "kube-mail.helmich.me/smtp-access": "true"
     ports:

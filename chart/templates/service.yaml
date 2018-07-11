@@ -20,7 +20,7 @@ spec:
     - port: {{ .Values.grpc.service.externalPort }}
       targetPort: {{ .Values.grpc.service.internalPort }}
       protocol: TCP
-      name: http
+      name: grpc
     {{- end }}
     - port: {{ .Values.smtp.service.externalPort }}
       targetPort: {{ .Values.smtp.service.internalPort }}
