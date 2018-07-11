@@ -1,4 +1,4 @@
-import {Message, Query, RetrieveOptions, RetrieveResult, Sink} from "./interface";
+import {Message, Query, RetrieveOptions, RetrieveResult, Sink, StoredMessage} from "./interface";
 import {Client} from "elasticsearch";
 import {SourceReference} from "../policy/provider";
 import uuid = require("uuid");
@@ -181,7 +181,7 @@ export class ElasticsearchSink implements Sink {
         });
 
         return {
-            messages: result.hits.hits.map(d => d._source as Message),
+            messages: result.hits.hits.map(d => d._source as StoredMessage),
             totalCount: result.hits.total,
         };
     }
