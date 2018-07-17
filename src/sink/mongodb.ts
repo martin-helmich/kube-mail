@@ -1,11 +1,17 @@
 import {
-    Message, Query, RealtimeSink, RetrieveOptions, RetrieveResult, RetrieveStreamOptions,
+    Message,
+    Query,
+    RealtimeSink,
+    RetrieveOptions,
+    RetrieveResult,
+    RetrieveStreamOptions,
     StoredMessage
 } from "./interface";
 import {CatchPolicy, SourceReference} from "../policy/provider";
 import {TypedStream} from "../util";
-import {Collection} from "mongodb";
+import {Collection, ObjectID} from "mongodb";
 import {Stream} from "stream";
+import uuid = require("uuid");
 
 const debug = require("debug")("kubemail:sink:mongodb");
 
@@ -18,12 +24,21 @@ export const mapLabelsForMongodb = (input: {[k: string]: string}): {[k:string]: 
     return output;
 };
 
+const addMissingIDs = (m: StoredMessage) => {
+    if (m.id === undefined) {
+        m.id = ((m as any)._id as ObjectID).toHexString();
+    }
+
+    return m;
+};
+
 export class MongodbSink implements RealtimeSink {
 
     public constructor(private collection: Collection) {
     }
 
     public async setup(): Promise<void> {
+        await this.collection.createIndex({"id": 1}, {unique: true});
         await this.collection.createIndex({"source.namespace": 1});
         await this.collection.createIndex({"expires": 1}, {expireAfterSeconds: 0});
         return;
@@ -36,7 +51,7 @@ export class MongodbSink implements RealtimeSink {
             sourceCopy.labels = mapLabelsForMongodb(sourceCopy.labels);
         }
 
-        const doc: StoredMessage = {source: sourceCopy, ...message};
+        const doc: StoredMessage = {id: uuid.v4(), source: sourceCopy, ...message};
 
         if (policy.retention !== undefined) {
             doc.expires = new Date(new Date().getTime() + policy.retention * 86400000);
@@ -62,7 +77,7 @@ export class MongodbSink implements RealtimeSink {
         }
 
         const totalCount = await this.collection.countDocuments(q, {});
-        const messages = await this.collection.find(q).limit(limit).skip(offset).toArray();
+        const messages = await this.collection.find(q).limit(limit).skip(offset).map(addMissingIDs).toArray();
 
         return {
             totalCount,
@@ -104,7 +119,7 @@ export class MongodbSink implements RealtimeSink {
                 debug("received change: %o", next);
 
                 if (next.operationType === "insert") {
-                    outputStream.emit("data", next.fullDocument);
+                    outputStream.emit("data", addMissingIDs(next.fullDocument));
                 }
 
                 if (next.operationType === "invalidate") {
@@ -114,7 +129,7 @@ export class MongodbSink implements RealtimeSink {
         };
 
         if (!onlyNew) {
-            const items = this.collection.find(q).stream();
+            const items = this.collection.find(q).map(addMissingIDs).stream();
 
             items.on("data", d => outputStream.emit("data", d));
             items.on("error", err => outputStream.emit("err", err));

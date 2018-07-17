@@ -166,6 +166,9 @@ export namespace ListCaughtEmailsResponse {
 }
 
 export class Email extends jspb.Message {
+  getId(): string;
+  setId(value: string): void;
+
   hasSource(): boolean;
   clearSource(): void;
   getSource(): Email.Source | undefined;
@@ -196,6 +199,7 @@ export class Email extends jspb.Message {
 
 export namespace Email {
   export type AsObject = {
+    id: string,
     source?: Email.Source.AsObject,
     envelope?: Email.EmailEnvelope.AsObject,
     date: number,

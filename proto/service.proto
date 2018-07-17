@@ -80,6 +80,7 @@ message Email {
         repeated Header header = 7;
     }
 
+    string id = 5;
     Source source = 4;
     EmailEnvelope envelope = 1;
     int64 date = 2;

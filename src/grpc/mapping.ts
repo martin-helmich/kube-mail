@@ -1,12 +1,11 @@
 import {EmailAddress, Headers, HeaderValue} from "mailparser";
 import {Email} from "./proto/service_pb";
+import {StoredMessage} from "../sink/interface";
 import Header = Email.EmailMessage.Header;
-import {Message, StoredMessage} from "../sink/interface";
 import EmailEnvelope = Email.EmailEnvelope;
 import EmailMessage = Email.EmailMessage;
 import Content = Email.EmailMessage.Content;
 import Source = Email.Source;
-import {SourceReference} from "../policy/provider";
 
 const makeHeader = (name: string, value: string): Header => {
     const header = new Header();
@@ -103,6 +102,7 @@ export const mapMessage = (m: StoredMessage) => {
 
     msg.setHeaderList(mapEmailHeaders(m.mail.headers));
 
+    email.setId(m.id);
     email.setSource(source);
     email.setEnvelope(env);
     email.setMessage(msg);

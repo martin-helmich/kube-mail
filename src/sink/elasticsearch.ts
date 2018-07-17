@@ -133,11 +133,12 @@ export class ElasticsearchSink implements Sink {
             }
         }
 
+        const id = uuid.v4();
         const response = await this.client.create({
             index,
             type,
-            id: uuid.v4(),
-            body: {source, ...message},
+            id,
+            body: {id, source, ...message},
         });
 
         debug("stored message: %o", response);
@@ -181,7 +182,7 @@ export class ElasticsearchSink implements Sink {
         });
 
         return {
-            messages: result.hits.hits.map(d => d._source as StoredMessage),
+            messages: result.hits.hits.map(d => ({id: (d._source as any).id || d._id, ...d._source} as StoredMessage)),
             totalCount: result.hits.total,
         };
     }
