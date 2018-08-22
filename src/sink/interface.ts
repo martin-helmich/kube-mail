@@ -1,6 +1,6 @@
 import {SMTPServerSession} from "smtp-server";
 import {ParsedMail} from "mailparser";
-import {SourceReference} from "../policy/provider";
+import {CatchPolicy, Policy, SourceReference} from "../policy/provider";
 import {TypedStream} from "../util";
 
 export interface Message {
@@ -14,6 +14,12 @@ export interface Message {
     remoteAddress?: string;
 }
 
+export interface StoredMessage extends Message {
+    id: string;
+    source: SourceReference;
+    expires?: Date;
+}
+
 export interface Query {
     namespace: string;
     podName?: string;
@@ -25,8 +31,12 @@ export interface RetrieveOptions {
     offset?: number;
 }
 
+export interface RetrieveStreamOptions {
+    onlyNew?: boolean;
+}
+
 export interface RetrieveResult {
-    messages: Message[];
+    messages: StoredMessage[];
     totalCount: number;
 }
 
@@ -37,6 +47,10 @@ export interface Parser {
 export interface Sink {
     setup?(): Promise<void>;
 
-    storeMessage(source: SourceReference, message: Message): Promise<void>
+    storeMessage(source: SourceReference, message: Message, policy: CatchPolicy): Promise<void>
     retrieveMessages(query: Query, opts?: RetrieveOptions): Promise<RetrieveResult>
+}
+
+export interface RealtimeSink extends Sink {
+    retrieveMessageStream(query: Query, opts?: RetrieveStreamOptions): TypedStream<StoredMessage>;
 }

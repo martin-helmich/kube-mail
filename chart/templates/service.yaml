@@ -10,12 +10,20 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-    - port: {{ .Values.service.http.externalPort }}
-      targetPort: {{ .Values.service.http.internalPort }}
+    {{- if .Values.rest.enabled }}
+    - port: {{ .Values.rest.service.externalPort }}
+      targetPort: {{ .Values.rest.service.internalPort }}
       protocol: TCP
       name: http
-    - port: {{ .Values.service.smtp.externalPort }}
-      targetPort: {{ .Values.service.smtp.internalPort }}
+    {{- end }}
+    {{- if .Values.grpc.enabled }}
+    - port: {{ .Values.grpc.service.externalPort }}
+      targetPort: {{ .Values.grpc.service.internalPort }}
+      protocol: TCP
+      name: grpc
+    {{- end }}
+    - port: {{ .Values.smtp.service.externalPort }}
+      targetPort: {{ .Values.smtp.service.internalPort }}
       protocol: TCP
       name: smtp
   selector:

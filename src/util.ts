@@ -22,4 +22,5 @@ export const readStreamIntoBuffer = (stream: Readable): Promise<Buffer> => {
 export declare class TypedStream<T> extends Stream {
     on(event: "data", callback: (obj: T) => any): any;
     on(event: "end", callback: () => any): any;
+    on(event: "error", callback: (err: Error) => any): any;
 }

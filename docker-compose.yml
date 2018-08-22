@@ -2,18 +2,25 @@ version: "3"
 networks:
   kubemail: {}
 services:
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.2.2
+#  elasticsearch:
+#    image: docker.elastic.co/elasticsearch/elasticsearch:6.2.2
+#    ports:
+#      - 9200:9200
+#      - 9300:9300
+#    environment:
+#      discovery.type: single-node
+#    networks:
+#      - kubemail
+#  kibana:
+#    image: docker.elastic.co/kibana/kibana:6.2.2
+#    ports:
+#      - 5601:5601
+#    networks:
+#      - kubemail
+  mongodb:
+    image: mongo:4.0.0
     ports:
-      - 9200:9200
-      - 9300:9300
-    environment:
-      discovery.type: single-node
-    networks:
-      - kubemail
-  kibana:
-    image: docker.elastic.co/kibana/kibana:6.2.2
-    ports:
-      - 5601:5601
+      - 27017:27017
+    command: "--replSet rs0"
     networks:
       - kubemail

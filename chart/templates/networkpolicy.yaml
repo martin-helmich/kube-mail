@@ -10,17 +10,28 @@ spec:
   policyTypes:
   - Ingress
   ingress:
+  {{- if .Values.rest.enabled }}
   - from:
-    - podSelector:
+    - namespaceSelector:
         matchLabels:
           "kube-mail.helmich.me/api-access": "true"
     ports:
     - protocol: TCP
-      port: {{ .Values.service.http.internalPort }}
+      port: {{ .Values.rest.service.internalPort }}
+  {{- end }}
+  {{- if .Values.grpc.enabled }}
   - from:
-    - podSelector:
+    - namespaceSelector:
+        matchLabels:
+          "kube-mail.helmich.me/api-access": "true"
+    ports:
+    - protocol: TCP
+      port: {{ .Values.grpc.service.internalPort }}
+  {{- end }}
+  - from:
+    - namespaceSelector:
         matchLabels:
           "kube-mail.helmich.me/smtp-access": "true"
     ports:
     - protocol: TCP
-      port: {{ .Values.service.smtp.internalPort }}
+      port: {{ .Values.smtp.service.internalPort }}

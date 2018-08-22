@@ -6,23 +6,27 @@ image:
   repository: quay.io/martinhelmich/kube-mail
   tag: latest
   pullPolicy: Always
-elasticsearch:
-  image:
-    repository: docker.elastic.co/elasticsearch/elasticsearch
-    tag: 6.2.4
-    pullPolicy: IfNotPresent
+rbac:
+  enabled: true
+grpc:
+  enabled: true
+  service:
+    externalPort: 8080
+    internalPort: 8081
+rest:
+  enabled: true
+  service:
+    externalPort: 80
+    internalPort: 8080
+smtp:
+  service:
+    externalPort: 25
+    internalPort: 1025
 service:
   name: kube-mail
   type: ClusterIP
-  http:
-    externalPort: 80
-    internalPort: 8080
-  smtp:
-    externalPort: 25
-    internalPort: 1025
-elasticsearch:
-  volume:
-    storageClassName: default
+mongodb:
+  replicas: 1
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little

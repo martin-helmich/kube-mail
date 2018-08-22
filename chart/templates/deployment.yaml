@@ -15,15 +15,26 @@ spec:
         app: {{ template "chart.name" . }}
         release: {{ .Release.Name }}
     spec:
+      {{- if .Values.rbac.enabled }}
       serviceAccountName: {{ template "chart.fullname" . }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - containerPort: {{ .Values.service.http.internalPort }}
-            - containerPort: {{ .Values.service.smtp.internalPort }}
+            {{- if .Values.rest.enabled }}
+            - containerPort: {{ .Values.rest.service.internalPort }}
+              name: http
+            {{- end }}
+            {{- if .Values.grpc.enabled }}
+            - containerPort: {{ .Values.grpc.service.internalPort }}
+              name: grpc
+            {{- end }}
+            - containerPort: {{ .Values.smtp.service.internalPort }}
+              name: smtp
             - containerPort: 9100
+              name: metrics
           livenessProbe:
             httpGet:
               path: /status
@@ -33,8 +44,20 @@ spec:
               path: /readiness
               port: 9100
           env:
-            - name: KUBEMAIL_ELASTICSEARCH_HOST
-              value: {{ template "chart.fullname" . }}-elasticsearch:9200
+            - name: KUBEMAIL_MONGODB_URL
+              value: mongodb://{{ template "chart.mongodb.fullname" . }}:{{ .Values.mongodb.port }}/kubemail
+            - name: KUBEMAIL_REST_ENABLED
+              value: {{ .Values.rest.enabled | quote }}
+            {{- if .Values.rest.enabled }}
+            - name: KUBEMAIL_REST_PORT
+              value: {{ .Values.rest.service.internalPort | quote }}
+            {{- end }}
+            - name: KUBEMAIL_GRPC_ENABLED
+              value: {{ .Values.grpc.enabled | quote }}
+            {{- if .Values.grpc.enabled }}
+            - name: KUBEMAIL_GRPC_PORT
+              value: {{ .Values.grpc.service.internalPort | quote }}
+            {{- end }}
             - name: KUBEMAIL_KUBERNETES_INCLUSTER
               value: "true"
             - name: DEBUG

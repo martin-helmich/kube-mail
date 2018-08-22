@@ -3,20 +3,21 @@ FROM node:8
 WORKDIR /app
 
 COPY package*.json /app/
+
+RUN npm install -g npm@^6.1.0 && npm install
+
 COPY tsconfig* /app/
+COPY proto /app/proto
 COPY src /app/src
 
-RUN npm install -g npm@^6.1.0
-RUN npm ci
-RUN npm run compile
+RUN npm run generate && npm run compile
 
 FROM node:8
 
 WORKDIR /app
 COPY package*.json /app/
 
-RUN npm install -g npm@^6.1.0
-RUN npm ci --production
+RUN npm install -g npm@^6.1.0 && npm install --production
 
 FROM node:8-slim
 

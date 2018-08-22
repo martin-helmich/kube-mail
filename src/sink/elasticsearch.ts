@@ -1,8 +1,6 @@
-import {Message, Query, RetrieveOptions, RetrieveResult, Sink} from "./interface";
+import {Message, Query, RetrieveOptions, RetrieveResult, Sink, StoredMessage} from "./interface";
 import {Client} from "elasticsearch";
 import {SourceReference} from "../policy/provider";
-import {TypedStream} from "../util";
-import {Stream} from "stream";
 import uuid = require("uuid");
 
 const debug = require("debug")("sink:elasticsearch");
@@ -135,11 +133,12 @@ export class ElasticsearchSink implements Sink {
             }
         }
 
+        const id = uuid.v4();
         const response = await this.client.create({
             index,
             type,
-            id: uuid.v4(),
-            body: {source, ...message},
+            id,
+            body: {id, source, ...message},
         });
 
         debug("stored message: %o", response);
@@ -183,7 +182,7 @@ export class ElasticsearchSink implements Sink {
         });
 
         return {
-            messages: result.hits.hits.map(d => d._source as Message),
+            messages: result.hits.hits.map(d => ({id: (d._source as any).id || d._id, ...d._source} as StoredMessage)),
             totalCount: result.hits.total,
         };
     }

@@ -3,3 +3,4 @@
 !config
 !package*.json
 !tsconfig*
+!proto

@@ -12,17 +12,21 @@ import {buildRecorderFromConfig} from "./stats/factory";
 import {buildKubernetesClientFromConfig} from "./k8s/factory";
 import {KubernetesPolicyProviderFactory} from "./policy/factory";
 import {MonitoringServer} from "./monitoring";
+import {GRPCServer} from "./grpc/server";
+import {MongoClient} from "mongodb";
 
 console.log("starting");
 
-const client = new Client({host: config.get("elasticsearch.host")});
-
-const debug = require("debug")("kubemail:main");
-const parser = new ParserImpl();
-const sink = buildSinkFromConfig(config.get<SinkConfig>("sink"), client);
-const recorder = buildRecorderFromConfig(config.get<RecorderConfig>("recorder"), client);
-
 (async () => {
+    const client = new Client({host: config.get("elasticsearch.host")});
+    const mongo = (await MongoClient.connect(config.get("mongodb.url"), {useNewUrlParser: true}));
+    const db = mongo.db();
+
+    const debug = require("debug")("kubemail:main");
+    const parser = new ParserImpl();
+    const sink = buildSinkFromConfig(config.get<SinkConfig>("sink"), client, db);
+    const recorder = buildRecorderFromConfig(config.get<RecorderConfig>("recorder"), client, db);
+
     if (sink.setup) {
         debug("setting up sink");
         await sink.setup();
@@ -41,10 +45,8 @@ const recorder = buildRecorderFromConfig(config.get<RecorderConfig>("recorder"),
     const upstream = new SMTPUpstream();
     const backend = new SMTPBackend(provider, parser, recorder, sink, upstream);
 
-    const apiServer = new APIServer({
-        sink,
-        recorder,
-    });
+    const apiServer = new APIServer({sink, recorder});
+    const grpcServer = new GRPCServer({sink, recorder});
 
     const smtpServer = new SMTPServer({
         authOptional: true,
@@ -60,6 +62,17 @@ const recorder = buildRecorderFromConfig(config.get<RecorderConfig>("recorder"),
     await providerInitialized;
 
     monitoringServer.listen(9100);
-    apiServer.listen(8080);
+
+    if (config.get<boolean>("rest.enabled")) {
+        apiServer.listen(config.get<number>("rest.port"));
+    }
+
+    if (config.get<boolean>("grpc.enabled")) {
+        grpcServer.listen(config.get<number>("grpc.port"));
+    }
+
     smtpServer.listen(1025);
-})();
+})().catch(err => {
+    console.error(err);
+    process.exit(1);
+});

@@ -12,6 +12,7 @@
     "@types/express": "^4.11.1",
     "@types/google-protobuf": "^3.2.7",
     "@types/jest": "^22.2.3",
+    "@types/mongodb": "^3.1.1",
     "@types/node": "9",
     "@types/nodemailer": "^4.6.0",
     "@types/protobufjs": "^5.0.31",
@@ -26,7 +27,7 @@
     "compile": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
     "test": "jest",
-    "generate": "./node_modules/.bin/grpc_tools_node_protoc --js_out=import_style=commonjs,binary:src/grpc --grpc_out=src/grpc --plugin=\"protoc-gen-ts=./node_modules/.bin/protoc-gen-ts\" --ts_out=service=true:src/grpc proto/service.proto"
+    "generate": "mkdir -p dist/grpc && ./node_modules/.bin/grpc_tools_node_protoc --js_out=import_style=commonjs,binary:dist/grpc --grpc_out=dist/grpc --plugin=\"protoc-gen-ts=./node_modules/.bin/protoc-gen-ts\" --ts_out=src/grpc proto/service.proto"
   },
   "dependencies": {
     "@mittwald/kubernetes": "^2.0.0",
@@ -42,6 +43,7 @@
     "ip-address": "^5.8.9",
     "js-yaml": "^3.11.0",
     "mailparser": "^2.2.0",
+    "mongodb": "^3.1.1",
     "nodemailer": "^4.6.4",
     "smtp-server": "^3.4.4",
     "uuid": "^3.2.1"

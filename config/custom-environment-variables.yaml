@@ -1,6 +1,21 @@
 elasticsearch:
   host: KUBEMAIL_ELASTICSEARCH_HOST
 
+mongodb:
+  url: KUBEMAIL_MONGODB_URL
+
+rest:
+  enabled:
+    __name: KUBEMAIL_REST_ENABLED
+    __format: json
+  port: KUBEMAIL_REST_PORT
+
+grpc:
+  enabled:
+    __name: KUBEMAIL_GRPC_ENABLED
+    __format: json
+  port: KUBEMAIL_GRPC_PORT
+
 sink:
   elasticsearch:
     index: KUBEMAIL_ELASTICSEARCH_SINK_INDEX
@@ -15,3 +30,4 @@ policy:
     inCluster:
       __name: KUBEMAIL_KUBERNETES_INCLUSTER
       __format: json
+    static: KUBEMAIL_KUBERNETES_POLICY
