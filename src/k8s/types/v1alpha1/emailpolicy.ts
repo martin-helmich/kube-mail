@@ -10,6 +10,10 @@ export type SMTPSink = {
         name: string;
         namespace?: string;
     };
+    errors?: {
+        logErrors: boolean;
+        retentionDays?: number;
+    }
 }
 
 export type CatchSink = {

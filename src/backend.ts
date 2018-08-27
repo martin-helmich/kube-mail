@@ -4,7 +4,6 @@ import {Policy, PolicyProvider} from "./policy/provider";
 import {Parser, Sink} from "./sink/interface";
 import {readStreamIntoBuffer} from "./util";
 import {SMTPUpstream} from "./upstream/smtp";
-import {StatisticsRecorder} from "./stats/recorder";
 
 const debug = require("debug")("backend");
 
@@ -16,7 +15,6 @@ export class SMTPBackend {
 
     public constructor(private policyProvider: PolicyProvider,
                        private parser: Parser,
-                       private recorder: StatisticsRecorder,
                        private sink: Sink,
                        private upstream: SMTPUpstream) {
     }
@@ -59,21 +57,21 @@ export class SMTPBackend {
 
         try {
             const buf = await readStreamIntoBuffer(stream);
+            const msg = await this.parser.parseMessage(session, buf);
 
-            // noinspection JSIgnoredPromiseFromCall
-            this.recorder.observe(policy, mailFrom.address, rcptTo.map(r => r.address));
+            msg.remoteAddress = remoteAddress;
 
             if (policy.type === "catch") {
-                const msg = await this.parser.parseMessage(session, buf);
-
-                msg.remoteAddress = remoteAddress;
-
                 debug("parsed message: %O", msg);
 
                 callback();
-                await this.sink.storeMessage(policy.sourceReference, msg, policy);
+                await this.sink.logCaughtMessage(policy.sourceReference, msg, policy);
             } else {
                 await this.upstream.forward(policy, envelope, buf);
+
+                this.sink.logForwardedMessage(policy.sourceReference, msg, policy)
+                    .then(() => debug("logged message as observed"));
+
                 callback();
             }
         } catch (err) {

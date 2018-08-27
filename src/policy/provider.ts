@@ -15,6 +15,10 @@ export type ForwardPolicy = {
     id: string;
     type: "forward";
     sourceReference: SourceReference;
+    errors: {
+        logErrors: boolean;
+        retention?: number;
+    };
     ratelimit?: {
         maximum: number;
         limitPeriod: "hour" | "minute";

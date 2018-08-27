@@ -108,6 +108,10 @@ export class KubernetesPolicyProvider implements PolicyProvider {
                 type: "forward",
                 id: policy.metadata.namespace + "/" + policy.metadata.name,
                 sourceReference,
+                errors: smtp.errors || {
+                    logErrors: true,
+                    retention: 3,
+                },
                 smtp: {
                     server: smtpServer.spec.server,
                     port: smtpServer.spec.port || 587,

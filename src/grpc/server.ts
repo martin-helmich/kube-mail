@@ -7,7 +7,6 @@ import {
     WatchCaughtEmailsRequest
 } from "./proto/service_pb";
 import {RealtimeSink, Sink} from "../sink/interface";
-import {StatisticsRecorder} from "../stats/recorder";
 import {mapMessage} from "./mapping";
 import Item = Summary.Item;
 
@@ -16,17 +15,14 @@ const service = require("./proto/service_grpc_pb");
 
 export interface GRPCServerOptions {
     sink: Sink;
-    recorder: StatisticsRecorder;
 }
 
 export class GRPCServer {
 
     private sink: Sink;
-    private recorder: StatisticsRecorder;
 
     public constructor(opts: GRPCServerOptions) {
         this.sink = opts.sink;
-        this.recorder = opts.recorder;
     }
 
     public listen(port: number) {
@@ -43,7 +39,7 @@ export class GRPCServer {
                     return cb({name: "MissingArgument", message: "you must supply a 'namespace' argument"}, null);
                 }
 
-                const report = await this.recorder.summarize({namespace, from}, {});
+                const report = await this.sink.retrieveForwardingSummary({namespace, from});
                 const result = new Summary();
 
                 result.setItemList(report.messagesOverTime.map(moi => {
@@ -84,13 +80,13 @@ export class GRPCServer {
                     }, null);
                 }
 
-                const result = await this.sink.retrieveMessages({namespace}, {limit, offset});
+                const result = await this.sink.retrieveCaughtMessages({namespace}, {limit, offset});
                 const response = new ListCaughtEmailsResponse();
 
                 response.setLimit(limit);
                 response.setOffset(offset);
                 response.setTotalCount(result.totalCount);
-                response.setEmailList(result.messages.map(mapMessage));
+                response.setEmailList(result.items.map(mapMessage));
 
                 cb(null, response);
             },
@@ -113,7 +109,7 @@ export class GRPCServer {
                     return;
                 }
 
-                const stream = (this.sink as RealtimeSink).retrieveMessageStream({namespace}, {onlyNew});
+                const stream = (this.sink as RealtimeSink).retrieveCaughtMessageStream({namespace}, {onlyNew});
 
                 stream.on("data", msg => {
                     const mapped = mapMessage(msg);

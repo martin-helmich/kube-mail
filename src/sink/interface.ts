@@ -1,7 +1,9 @@
 import {SMTPServerSession} from "smtp-server";
 import {ParsedMail} from "mailparser";
-import {CatchPolicy, Policy, SourceReference} from "../policy/provider";
+import {CatchPolicy, ForwardPolicy, SourceReference} from "../policy/provider";
 import {TypedStream} from "../util";
+import {RetrieveOptions, RetrieveStreamOptions} from "./options";
+import {ErrorListResult, RetrieveResult, SummarizeResults} from "./results";
 
 export interface Message {
     envelope: {
@@ -20,24 +22,20 @@ export interface StoredMessage extends Message {
     expires?: Date;
 }
 
+export interface StoredError {
+    id: string;
+    source: SourceReference;
+
+    message: Message;
+    expires: Date;
+    error: string;
+}
+
 export interface Query {
     namespace: string;
     podName?: string;
     labelSelector?: {[k: string]: string};
-}
-
-export interface RetrieveOptions {
-    limit?: number;
-    offset?: number;
-}
-
-export interface RetrieveStreamOptions {
-    onlyNew?: boolean;
-}
-
-export interface RetrieveResult {
-    messages: StoredMessage[];
-    totalCount: number;
+    from?: Date;
 }
 
 export interface Parser {
@@ -47,10 +45,15 @@ export interface Parser {
 export interface Sink {
     setup?(): Promise<void>;
 
-    storeMessage(source: SourceReference, message: Message, policy: CatchPolicy): Promise<void>
-    retrieveMessages(query: Query, opts?: RetrieveOptions): Promise<RetrieveResult>
+    logCaughtMessage(source: SourceReference, message: Message, policy: CatchPolicy): Promise<void>;
+    logForwardedMessage(source: SourceReference, message: Message, policy: ForwardPolicy): Promise<void>;
+    logError(source: SourceReference, message: Message, error: string, policy: ForwardPolicy): Promise<void>;
+
+    retrieveCaughtMessages(query: Query, opts?: RetrieveOptions): Promise<RetrieveResult>;
+    retrieveForwardingSummary(query: Query): Promise<SummarizeResults>;
+    retrieveErrors(query: Query, opts?: RetrieveOptions): Promise<ErrorListResult>;
 }
 
 export interface RealtimeSink extends Sink {
-    retrieveMessageStream(query: Query, opts?: RetrieveStreamOptions): TypedStream<StoredMessage>;
+    retrieveCaughtMessageStream(query: Query, opts?: RetrieveStreamOptions): TypedStream<StoredMessage>;
 }

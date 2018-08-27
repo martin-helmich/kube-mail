@@ -1,14 +1,12 @@
 import {SMTPServer} from "smtp-server";
 import {SMTPBackend} from "./backend";
 import {ParserImpl} from "./sink/parser";
-import {Client} from "elasticsearch";
 import {SMTPUpstream} from "./upstream/smtp";
 import {APIServer} from "./api";
 import {register} from "prom-client";
 import * as config from "config";
 import {buildSinkFromConfig} from "./sink/factory";
-import {PolicyConfig, RecorderConfig, SinkConfig} from "./config";
-import {buildRecorderFromConfig} from "./stats/factory";
+import {PolicyConfig, SinkConfig} from "./config";
 import {buildKubernetesClientFromConfig} from "./k8s/factory";
 import {KubernetesPolicyProviderFactory} from "./policy/factory";
 import {MonitoringServer} from "./monitoring";
@@ -18,23 +16,16 @@ import {MongoClient} from "mongodb";
 console.log("starting");
 
 (async () => {
-    const client = new Client({host: config.get("elasticsearch.host")});
     const mongo = (await MongoClient.connect(config.get("mongodb.url"), {useNewUrlParser: true}));
     const db = mongo.db();
 
     const debug = require("debug")("kubemail:main");
     const parser = new ParserImpl();
-    const sink = buildSinkFromConfig(config.get<SinkConfig>("sink"), client, db);
-    const recorder = buildRecorderFromConfig(config.get<RecorderConfig>("recorder"), client, db);
+    const sink = buildSinkFromConfig(config.get<SinkConfig>("sink"), db);
 
     if (sink.setup) {
         debug("setting up sink");
         await sink.setup();
-    }
-
-    if (recorder.setup) {
-        debug("setting up recorder");
-        await recorder.setup();
     }
 
     const api = buildKubernetesClientFromConfig(config.get<PolicyConfig>("policy"), register);
@@ -43,10 +34,10 @@ console.log("starting");
     const [provider, providerInitialized] = providerFactory.build();
 
     const upstream = new SMTPUpstream();
-    const backend = new SMTPBackend(provider, parser, recorder, sink, upstream);
+    const backend = new SMTPBackend(provider, parser, sink, upstream);
 
-    const apiServer = new APIServer({sink, recorder});
-    const grpcServer = new GRPCServer({sink, recorder});
+    const apiServer = new APIServer({sink});
+    const grpcServer = new GRPCServer({sink});
 
     const smtpServer = new SMTPServer({
         authOptional: true,
