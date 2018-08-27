@@ -1,6 +1,6 @@
 import {EmailAddress, Headers, HeaderValue} from "mailparser";
-import {Email} from "./proto/service_pb";
-import {StoredMessage} from "../sink/interface";
+import {Email, Error} from "./proto/service_pb";
+import {StoredError, StoredMessage} from "../sink/interface";
 import Header = Email.EmailMessage.Header;
 import EmailEnvelope = Email.EmailEnvelope;
 import EmailMessage = Email.EmailMessage;
@@ -61,6 +61,12 @@ export const mapEmailHeaders = (a: Headers): Array<Header> => {
     }
 
     return headers;
+};
+
+export const mapError = (e: StoredError): Error => {
+    const error = new Error();
+
+    return error;
 };
 
 export const mapMessage = (m: StoredMessage) => {

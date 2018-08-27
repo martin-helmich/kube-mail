@@ -2,13 +2,14 @@ import {Server, ServerCredentials, ServerUnaryCall, ServerWriteableStream, Servi
 import {
     GetSummaryRequest,
     ListCaughtEmailsRequest,
-    ListCaughtEmailsResponse,
+    ListCaughtEmailsResponse, ListErrorsRequest, ListErrorsResponse,
     Summary,
     WatchCaughtEmailsRequest
 } from "./proto/service_pb";
 import {RealtimeSink, Sink} from "../sink/interface";
-import {mapMessage} from "./mapping";
+import {mapError, mapMessage} from "./mapping";
 import Item = Summary.Item;
+import * as _ from "lodash";
 
 const debug = require("debug")("kubemail:grpc");
 const service = require("./proto/service_grpc_pb");
@@ -132,6 +133,31 @@ export class GRPCServer {
                     });
                 })
             },
+
+            listErrors: async (call: ServerUnaryCall<ListErrorsRequest>, cb: (err: ServiceError|null, res: ListErrorsResponse|null) => any): Promise<void> => {
+                const limit = call.request.getLimit() || 100;
+                const offset = call.request.getOffset() || 0;
+                const namespace = call.request.getNamespace();
+                const labelSelectorMap = call.request.getLabelSelectorMap();
+                const labelSelector = _.fromPairs(labelSelectorMap.toArray());
+
+                if (!namespace) {
+                    return cb({
+                        name: "MissingArgument",
+                        message: "you must supply a 'namespace' argument"
+                    }, null);
+                }
+
+                const result = await this.sink.retrieveErrors({namespace, labelSelector}, {limit, offset});
+                const response = new ListErrorsResponse();
+
+                response.setLimit(limit);
+                response.setOffset(offset);
+                response.setTotalCount(result.totalCount);
+                response.setErrorList(result.items.map(mapError));
+
+                cb(null, response);
+            }
         });
 
         debug("starting GRPC server at %o", addr);

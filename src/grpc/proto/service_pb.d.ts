@@ -10,6 +10,8 @@ export class GetSummaryRequest extends jspb.Message {
   getFromTimestamp(): number;
   setFromTimestamp(value: number): void;
 
+  getLabelSelectorMap(): jspb.Map<string, string>;
+  clearLabelSelectorMap(): void;
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): GetSummaryRequest.AsObject;
   static toObject(includeInstance: boolean, msg: GetSummaryRequest): GetSummaryRequest.AsObject;
@@ -24,6 +26,7 @@ export namespace GetSummaryRequest {
   export type AsObject = {
     namespace: string,
     fromTimestamp: number,
+    labelSelectorMap: Array<[string, string]>,
   }
 }
 
@@ -89,6 +92,8 @@ export class ListCaughtEmailsRequest extends jspb.Message {
   getOffset(): number;
   setOffset(value: number): void;
 
+  getLabelSelectorMap(): jspb.Map<string, string>;
+  clearLabelSelectorMap(): void;
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ListCaughtEmailsRequest.AsObject;
   static toObject(includeInstance: boolean, msg: ListCaughtEmailsRequest): ListCaughtEmailsRequest.AsObject;
@@ -104,6 +109,7 @@ export namespace ListCaughtEmailsRequest {
     namespace: string,
     limit: number,
     offset: number,
+    labelSelectorMap: Array<[string, string]>,
   }
 }
 
@@ -114,6 +120,8 @@ export class WatchCaughtEmailsRequest extends jspb.Message {
   getOnlyNew(): boolean;
   setOnlyNew(value: boolean): void;
 
+  getLabelSelectorMap(): jspb.Map<string, string>;
+  clearLabelSelectorMap(): void;
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): WatchCaughtEmailsRequest.AsObject;
   static toObject(includeInstance: boolean, msg: WatchCaughtEmailsRequest): WatchCaughtEmailsRequest.AsObject;
@@ -128,6 +136,7 @@ export namespace WatchCaughtEmailsRequest {
   export type AsObject = {
     namespace: string,
     onlyNew: boolean,
+    labelSelectorMap: Array<[string, string]>,
   }
 }
 
@@ -361,6 +370,101 @@ export namespace Email {
         value: string,
       }
     }
+  }
+}
+
+export class Error extends jspb.Message {
+  getId(): string;
+  setId(value: string): void;
+
+  hasMessage(): boolean;
+  clearMessage(): void;
+  getMessage(): Email | undefined;
+  setMessage(value?: Email): void;
+
+  getError(): string;
+  setError(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Error.AsObject;
+  static toObject(includeInstance: boolean, msg: Error): Error.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: Error, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Error;
+  static deserializeBinaryFromReader(message: Error, reader: jspb.BinaryReader): Error;
+}
+
+export namespace Error {
+  export type AsObject = {
+    id: string,
+    message?: Email.AsObject,
+    error: string,
+  }
+}
+
+export class ListErrorsRequest extends jspb.Message {
+  getNamespace(): string;
+  setNamespace(value: string): void;
+
+  getLimit(): number;
+  setLimit(value: number): void;
+
+  getOffset(): number;
+  setOffset(value: number): void;
+
+  getLabelSelectorMap(): jspb.Map<string, string>;
+  clearLabelSelectorMap(): void;
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListErrorsRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: ListErrorsRequest): ListErrorsRequest.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: ListErrorsRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListErrorsRequest;
+  static deserializeBinaryFromReader(message: ListErrorsRequest, reader: jspb.BinaryReader): ListErrorsRequest;
+}
+
+export namespace ListErrorsRequest {
+  export type AsObject = {
+    namespace: string,
+    limit: number,
+    offset: number,
+    labelSelectorMap: Array<[string, string]>,
+  }
+}
+
+export class ListErrorsResponse extends jspb.Message {
+  getLimit(): number;
+  setLimit(value: number): void;
+
+  getOffset(): number;
+  setOffset(value: number): void;
+
+  getTotalCount(): number;
+  setTotalCount(value: number): void;
+
+  clearErrorList(): void;
+  getErrorList(): Array<Error>;
+  setErrorList(value: Array<Error>): void;
+  addError(value?: Error, index?: number): Error;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ListErrorsResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: ListErrorsResponse): ListErrorsResponse.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: ListErrorsResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ListErrorsResponse;
+  static deserializeBinaryFromReader(message: ListErrorsResponse, reader: jspb.BinaryReader): ListErrorsResponse;
+}
+
+export namespace ListErrorsResponse {
+  export type AsObject = {
+    limit: number,
+    offset: number,
+    totalCount: number,
+    errorList: Array<Error.AsObject>,
   }
 }
 

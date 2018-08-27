@@ -1,4 +1,4 @@
-import {StoredMessage} from "./interface";
+import {StoredError, StoredMessage} from "./interface";
 
 export type ListResult<T> = {
     items: T[];
@@ -16,10 +16,5 @@ export interface SummarizeResults {
     senders: {[k: string]: number};
 }
 
-export interface Error {
-    message: StoredMessage;
-    error: string;
-}
-
-export type ErrorListResult = ListResult<Error>;
+export type ErrorListResult = ListResult<StoredError>;
 export type RetrieveResult = ListResult<StoredMessage>;
