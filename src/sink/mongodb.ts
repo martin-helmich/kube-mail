@@ -71,7 +71,7 @@ export class MongodbSink implements RealtimeSink {
 
         if (query.labelSelector) {
             for (const k of Object.keys(query.labelSelector)) {
-                const mapped = k.replace(".", "~");
+                const mapped = k.replace("~", ".");
                 q[`source.labels.${mapped}`] = query.labelSelector[k];
             }
         }
@@ -96,7 +96,7 @@ export class MongodbSink implements RealtimeSink {
 
         if (query.labelSelector) {
             for (const k of Object.keys(query.labelSelector)) {
-                const mapped = k.replace(".", "~");
+                const mapped = k.replace("~", ".");
                 q[`source.labels.${mapped}`] = streamQ[`fullDocument.source.labels.${mapped}`] = query.labelSelector[k];
             }
         }
