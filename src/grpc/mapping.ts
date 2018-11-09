@@ -6,6 +6,7 @@ import EmailEnvelope = Email.EmailEnvelope;
 import EmailMessage = Email.EmailMessage;
 import Content = Email.EmailMessage.Content;
 import Source = Email.Source;
+import * as _ from "lodash";
 
 const makeHeader = (name: string, value: string): Header => {
     const header = new Header();
@@ -41,7 +42,7 @@ export const mapEmailHeaders = (a: Headers): Array<Header> => {
         }
 
         if (Array.isArray(v)) {
-            headers.push(...v.map(i => makeHeader(m, i)));
+            headers.push(...mapFuckValue(v, (value: any) => makeHeader(m, value)));
             continue;
         }
 
@@ -89,15 +90,15 @@ export const mapMessage = (m: StoredMessage) => {
 
     msg.setSubject(m.mail.subject);
     msg.setBody(msgBody);
-    msg.setToList(m.mail.to.value.map(mapEmailAddressToString));
-    msg.setFromList(m.mail.from.value.map(mapEmailAddressToString));
+    msg.setToList(mapFuckValue(m.mail.to, mapEmailAddressToString));
+    msg.setFromList(mapFuckValue(m.mail.from, mapEmailAddressToString));
 
     if (m.mail.cc) {
-        msg.setCcList(m.mail.cc.value.map(mapEmailAddressToString));
+        msg.setCcList(mapFuckValue(m.mail.cc, mapEmailAddressToString));
     }
 
     if (m.mail.bcc) {
-        msg.setBccList(m.mail.bcc.value.map(mapEmailAddressToString));
+        msg.setBccList(mapFuckValue(m.mail.bcc, mapEmailAddressToString));
     }
 
     msg.setHeaderList(mapEmailHeaders(m.mail.headers));
@@ -109,4 +110,12 @@ export const mapMessage = (m: StoredMessage) => {
     email.setDate(Math.floor(m.date.getTime() / 1000));
 
     return email;
+};
+
+const mapFuckValue = (v: any, mapperFunction: any): any[] => {
+    if (Array.isArray(v)) {
+        return _.flatten(v.map(e => e.value.map((v:any) => mapperFunction(v))));
+    }
+
+    return v.value.map(mapperFunction);
 };
