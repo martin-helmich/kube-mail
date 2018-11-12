@@ -32,6 +32,19 @@ const addMissingIDs = (m: StoredMessage) => {
     return m;
 };
 
+const mapLabelsFromMongo = (m: StoredMessage) => {
+    if (m.source.labels) {
+        const output: {[k:string]: string} = {};
+        for (const k of Object.keys(m.source.labels)) {
+            const mapped = k.replace("~", ".");
+            output[mapped] = m.source.labels[k];
+        }
+        m.source.labels = output;
+    }
+
+    return m;
+};
+
 export class MongodbSink implements RealtimeSink {
 
     public constructor(private collection: Collection) {
@@ -77,7 +90,13 @@ export class MongodbSink implements RealtimeSink {
         }
 
         const totalCount = await this.collection.countDocuments(q, {});
-        const messages = await this.collection.find(q).limit(limit).skip(offset).map(addMissingIDs).toArray();
+        const messages = await this.collection
+            .find(q)
+            .limit(limit)
+            .skip(offset)
+            .map(addMissingIDs)
+            .map(mapLabelsFromMongo)
+            .toArray();
 
         return {
             totalCount,
@@ -119,7 +138,9 @@ export class MongodbSink implements RealtimeSink {
                 debug("received change: %o", next);
 
                 if (next.operationType === "insert") {
-                    outputStream.emit("data", addMissingIDs(next.fullDocument));
+                    let document = addMissingIDs(next.fullDocument);
+                    document = mapLabelsFromMongo(document);
+                    outputStream.emit("data", document);
                 }
 
                 if (next.operationType === "invalidate") {
@@ -129,7 +150,11 @@ export class MongodbSink implements RealtimeSink {
         };
 
         if (!onlyNew) {
-            const items = this.collection.find(q).map(addMissingIDs).stream();
+            const items = this.collection
+                .find(q)
+                .map(addMissingIDs)
+                .map(mapLabelsFromMongo)
+                .stream();
 
             items.on("data", d => outputStream.emit("data", d));
             items.on("error", err => outputStream.emit("err", err));
