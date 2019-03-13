@@ -54,6 +54,7 @@ export class SMTPUpstream {
 
     private connectionForPolicy(policy: ForwardPolicy): Promise<PromisifiedSMTPConnection> {
         const {server, port, tls, auth} = policy.smtp;
+        const enableDebug =  policy.smtp.debug === undefined ? false : policy.smtp.debug;
         const {name, connectionTimeout, socketTimeout} = this.options;
 
         debug("connecting to SMTP server %o, port %o", server, port);
@@ -66,6 +67,7 @@ export class SMTPUpstream {
             connectionTimeout,
             socketTimeout,
             authMethod: auth ? auth.method : undefined,
+            debug: enableDebug,
         });
 
         return new Promise((res, rej) => {
