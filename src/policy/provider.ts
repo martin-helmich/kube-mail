@@ -29,6 +29,7 @@ export type ForwardPolicy = {
             password: string;
         }
         debug: boolean;
+        logger: boolean;
     };
 }
 
