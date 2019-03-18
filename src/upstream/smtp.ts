@@ -49,13 +49,15 @@ export class SMTPUpstream {
             to: envelope.rcptTo.map(r => r.address),
         }, message);
 
+        conn.close();
+
         debug("message sent");
     }
 
     private connectionForPolicy(policy: ForwardPolicy): Promise<PromisifiedSMTPConnection> {
         const {server, port, tls, auth} = policy.smtp;
-        const enableDebug =  policy.smtp.debug === undefined ? false : policy.smtp.debug;
-        const enableLogger =  policy.smtp.logger === undefined ? false : policy.smtp.logger;
+        const enableDebug = policy.smtp.debug === undefined ? false : policy.smtp.debug;
+        const enableLogger = policy.smtp.logger === undefined ? false : policy.smtp.logger;
         const {name, connectionTimeout, socketTimeout} = this.options;
 
         debug("connecting to SMTP server %o, port %o", server, port);
@@ -111,6 +113,10 @@ class PromisifiedSMTPConnection {
                 res(info);
             });
         })
+    }
+
+    public close() {
+        this.inner.close();
     }
 
 }
