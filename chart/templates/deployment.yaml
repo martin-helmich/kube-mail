@@ -62,6 +62,16 @@ spec:
               value: "true"
             - name: DEBUG
               value: "*"
+            {{- if .Values.watcher.emailPolicyInformer.selector }}
+            - name: WATCHER_EMAILPOLICYINFORMER_SELECTOR
+              value: |-
+                {{ toJson .Values.watcher.emailPolicyInformer.selector }}
+            {{- end }}
+            {{- if .Values.watcher.podInformer.selector }}
+            - name: WATCHER_PODINFORMER_SELECTOR
+              value: |-
+                {{ toJson .Values.watcher.podInformer.selector }}
+            {{- end }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
     {{- if .Values.nodeSelector }}

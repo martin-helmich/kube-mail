@@ -6,6 +6,7 @@ export type Config = {
     sink: SinkConfig;
     recorder: RecorderConfig;
     policy: PolicyConfig;
+    watcher?: WatcherConfig;
 }
 
 export type APIConfig = {
@@ -49,4 +50,17 @@ export type PolicyConfig = {
         inCluster?: false;
         config: string;
     }
+};
+
+export type WatcherConfig = {
+    emailPolicyInformer?: InformerConfig;
+    podInformer?: InformerConfig;
+}
+
+export type InformerConfig = {
+    selector: InformerConfigSelector;
+};
+
+export type InformerConfigSelector = {
+    [s: string]: string;
 };

@@ -34,3 +34,9 @@ policy:
     inCluster: false
     config: /Users/mhelmich/.kube/config
     static: ~
+
+watcher:
+  emailPolicyInformer:
+    #selector: {"foo":"bar","bar":"foo"}
+  podInformer:
+    #selector: {"foo":"bar","bar":"foo"}

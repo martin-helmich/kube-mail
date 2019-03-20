@@ -31,3 +31,9 @@ policy:
       __name: KUBEMAIL_KUBERNETES_INCLUSTER
       __format: json
     static: KUBEMAIL_KUBERNETES_POLICY
+
+watcher:
+  emailPolicyInformer:
+    selector: WATCHER_EMAILPOLICYINFORMER_SELECTOR
+  podInformer:
+    selector: WATCHER_PODINFORMER_SELECTOR
