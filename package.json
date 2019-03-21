@@ -18,7 +18,7 @@
     "@types/protobufjs": "^5.0.31",
     "@types/uuid": "^3.4.3",
     "grpc-tools": "^1.6.6",
-    "jest": "^22.4.3",
+    "jest": "^23.6.0",
     "ts-jest": "^22.4.4",
     "ts-protoc-gen": "^0.7.3",
     "typescript": "^2.8.3"
