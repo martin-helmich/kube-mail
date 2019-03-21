@@ -32,7 +32,7 @@
   "dependencies": {
     "@mittwald/kubernetes": "^2.3.1",
     "@types/mailparser": "^2.0.2",
-    "@types/smtp-server": "^3.3.5",
+    "@types/smtp-server": "^3.5.1",
     "config": "^1.30.0",
     "debug": "^3.1.0",
     "elasticsearch": "^14.2.2",
