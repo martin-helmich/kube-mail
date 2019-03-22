@@ -13,7 +13,7 @@
     "@types/google-protobuf": "^3.2.7",
     "@types/jest": "^22.2.3",
     "@types/mongodb": "^3.1.1",
-    "@types/node": "9",
+    "@types/node": "11",
     "@types/nodemailer": "^4.6.0",
     "@types/protobufjs": "^5.0.31",
     "@types/uuid": "^3.4.4",
