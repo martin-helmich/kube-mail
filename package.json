@@ -42,7 +42,7 @@
     "grpc": "^1.13.0",
     "ip-address": "^5.8.9",
     "js-yaml": "^3.11.0",
-    "mailparser": "^2.2.0",
+    "mailparser": "^2.5.0",
     "mongodb": "^3.2.2",
     "nodemailer": "^4.6.4",
     "smtp-server": "^3.4.4",
