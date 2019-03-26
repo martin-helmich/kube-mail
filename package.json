@@ -14,7 +14,7 @@
     "@types/jest": "^22.2.3",
     "@types/mongodb": "^3.1.1",
     "@types/node": "11",
-    "@types/nodemailer": "^4.6.0",
+    "@types/nodemailer": "^4.6.7",
     "@types/protobufjs": "^5.0.31",
     "@types/uuid": "^3.4.4",
     "grpc-tools": "^1.6.6",
