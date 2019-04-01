@@ -46,7 +46,7 @@
     "mongodb": "^3.2.2",
     "nodemailer": "^4.6.4",
     "smtp-server": "^3.4.4",
-    "uuid": "^3.2.1"
+    "uuid": "^3.3.2"
   },
   "jest": {
     "globals": {
