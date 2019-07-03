@@ -1,0 +1,4 @@
+engines:
+  # Die, tslint, die
+  tslint:
+    enabled: false

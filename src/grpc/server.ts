@@ -28,13 +28,13 @@ export class GRPCServer {
         const server = new Server();
 
         server.addService(service.KubeMailService, {
-            getSummary: async (call: ServerUnaryCall<GetSummaryRequest>, cb: (err: ServiceError|null, res: Summary|null) => any): Promise<void> => {
+            getSummary: async (call: ServerUnaryCall<GetSummaryRequest>, cb: (err: ServiceError | null, res: Summary | null) => any): Promise<void> => {
                 const namespace = call.request.getNamespace();
                 const fromTimestamp = call.request.getFromTimestamp();
                 const from = fromTimestamp ? new Date(fromTimestamp * 1000) : new Date(new Date().getTime() - 86400000);
 
                 if (!namespace) {
-                    return cb({name: "MissingArgument", message: "you must supply a 'namespace' argument"}, null);
+                    return cb({code: status.INVALID_ARGUMENT, name: "MissingArgument", message: "you must supply a 'namespace' argument"}, null);
                 }
 
                 const report = await this.recorder.summarize({namespace, from}, {});
@@ -66,17 +66,13 @@ export class GRPCServer {
                 cb(null, result);
             },
 
-            listCaughtEmails: async (call: ServerUnaryCall<ListCaughtEmailsRequest>, cb: (err: ServiceError|null, res: ListCaughtEmailsResponse|null) => any): Promise<void> => {
+            listCaughtEmails: async (call: ServerUnaryCall<ListCaughtEmailsRequest>, cb: (err: ServiceError | null, res: ListCaughtEmailsResponse | null) => any): Promise<void> => {
                 const limit = call.request.getLimit() || 100;
                 const offset = call.request.getOffset() || 0;
                 const namespace = call.request.getNamespace();
 
                 if (!namespace) {
-                    return cb({
-                        code: status.INVALID_ARGUMENT,
-                        name: "MissingArgument",
-                        message: "you must supply a 'namespace' argument"
-                    }, null);
+                    return cb({code: status.INVALID_ARGUMENT, name: "MissingArgument", message: "you must supply a 'namespace' argument"}, null);
                 }
 
                 const result = await this.sink.retrieveMessages({namespace}, {limit, offset});
@@ -90,33 +86,21 @@ export class GRPCServer {
                 cb(null, response);
             },
 
-            getCaughtEmail: async (call: ServerUnaryCall<GetCaughtEmailRequest>, cb: (err: ServiceError|null, res: Email|null) => any): Promise<void> => {
+            getCaughtEmail: async (call: ServerUnaryCall<GetCaughtEmailRequest>, cb: (err: ServiceError | null, res: Email | null) => any): Promise<void> => {
                 const namespace = call.request.getNamespace();
                 const emailID = call.request.getId();
 
                 if (!namespace) {
-                    return cb({
-                        code: status.INVALID_ARGUMENT,
-                        name: "MissingArgument",
-                        message: "you must supply a 'namespace' argument"
-                    }, null)
+                    return cb({code: status.INVALID_ARGUMENT, name: "MissingArgument", message: "you must supply a 'namespace' argument"}, null)
                 }
 
                 if (!emailID) {
-                    return cb({
-                        code: status.INVALID_ARGUMENT,
-                        name: "MissingArgument",
-                        message: "you must supply a 'id' argument"
-                    }, null)
+                    return cb({code: status.INVALID_ARGUMENT, name: "MissingArgument", message: "you must supply a 'id' argument"}, null)
                 }
 
                 const result = await this.sink.retrieveMessages({id: emailID, namespace});
                 if (result.messages.length < 1) {
-                    return cb({
-                        code: status.NOT_FOUND,
-                        name: "NotFound",
-                        message: "message with given ID not found",
-                    }, null);
+                    return cb({code: status.NOT_FOUND, name: "NotFound", message: "message with given ID not found"}, null);
                 }
 
                 const mapped = mapMessage(result.messages[0]);
@@ -128,10 +112,7 @@ export class GRPCServer {
                 const onlyNew = call.request.getOnlyNew();
 
                 if (!namespace) {
-                    call.emit("error", {
-                        name: "MissingArgument",
-                        message: "you must supply a 'namespace' argument"
-                    });
+                    call.emit("error", {code: status.INVALID_ARGUMENT, name: "MissingArgument", message: "you must supply a 'namespace' argument"});
                     return;
                 }
 
@@ -158,10 +139,7 @@ export class GRPCServer {
 
                 stream.on("error", (err: Error) => {
                     debug("error while streaming: %o", err);
-                    call.emit("error", {
-                        name: "InternalError",
-                        message: "an error occurred while streaming messages"
-                    });
+                    call.emit("error", {code: status.INTERNAL, name: "InternalError", message: "an error occurred while streaming messages"});
                 })
             },
         });
