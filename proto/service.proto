@@ -6,6 +6,7 @@ service KubeMail {
 
     rpc ListCaughtEmails(ListCaughtEmailsRequest) returns (ListCaughtEmailsResponse);
     rpc WatchCaughtEmails(WatchCaughtEmailsRequest) returns (stream Email);
+    rpc GetCaughtEmail(GetCaughtEmailRequest) returns (Email);
 
     rpc GetSummary(GetSummaryRequest) returns (Summary);
 
@@ -31,6 +32,11 @@ message ListCaughtEmailsRequest {
     string namespace = 1;
     int32 limit = 2;
     int32 offset = 3;
+}
+
+message GetCaughtEmailRequest {
+    string namespace = 1;
+    string id = 2;
 }
 
 message WatchCaughtEmailsRequest {

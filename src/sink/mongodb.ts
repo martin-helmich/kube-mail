@@ -74,20 +74,33 @@ export class MongodbSink implements RealtimeSink {
         debug("stored message: %o", doc);
     }
 
-    public async retrieveMessages(query: Query, opts?: RetrieveOptions): Promise<RetrieveResult> {
+    private static buildQueries(query: Query): [any, any] {
         const q: any = {"source.namespace": query.namespace};
-        const {limit = 100, offset = 0} = opts || {};
+        const streamQ: any = {"fullDocument.source.namespace": query.namespace};
+
+        if (query.id) {
+            q.id = query.id;
+        }
 
         if (query.podName) {
             q["source.podName"] = query.podName;
+            streamQ["fullDocument.source.podName"] = query.podName;
         }
 
         if (query.labelSelector) {
             for (const k of Object.keys(query.labelSelector)) {
                 const mapped = k.replace(".", "~");
                 q[`source.labels.${mapped}`] = query.labelSelector[k];
+                streamQ[`fullDocument.source.labels.${mapped}`] = query.labelSelector[k];
             }
         }
+
+        return q;
+    }
+
+    public async retrieveMessages(query: Query, opts?: RetrieveOptions): Promise<RetrieveResult> {
+        const [q, ] = MongodbSink.buildQueries(query);
+        const {limit = 100, offset = 0} = opts || {};
 
         const totalCount = await this.collection.countDocuments(q, {});
         const messages = await this.collection
@@ -106,19 +119,7 @@ export class MongodbSink implements RealtimeSink {
 
     public retrieveMessageStream(query: Query, opts?: RetrieveStreamOptions): TypedStream<StoredMessage> {
         const {onlyNew = false} = opts || {};
-        const q: any = {"source.namespace": query.namespace};
-        const streamQ: any = {"fullDocument.source.namespace": query.namespace};
-
-        if (query.podName) {
-            q["source.podName"] = streamQ["fullDocument.source.podName"] = query.podName;
-        }
-
-        if (query.labelSelector) {
-            for (const k of Object.keys(query.labelSelector)) {
-                const mapped = k.replace(".", "~");
-                q[`source.labels.${mapped}`] = streamQ[`fullDocument.source.labels.${mapped}`] = query.labelSelector[k];
-            }
-        }
+        const [q, streamQ] = MongodbSink.buildQueries(query);
 
         const outputStream = new Stream();
 
