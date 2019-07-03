@@ -78,6 +78,10 @@ export class MongodbSink implements RealtimeSink {
         const q: any = {"source.namespace": query.namespace};
         const {limit = 100, offset = 0} = opts || {};
 
+        if (query.id) {
+            q["id"] = query.id;
+        }
+
         if (query.podName) {
             q["source.podName"] = query.podName;
         }

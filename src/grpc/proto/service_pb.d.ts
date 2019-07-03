@@ -107,6 +107,30 @@ export namespace ListCaughtEmailsRequest {
   }
 }
 
+export class GetCaughtEmailRequest extends jspb.Message {
+  getNamespace(): string;
+  setNamespace(value: string): void;
+
+  getId(): string;
+  setId(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetCaughtEmailRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: GetCaughtEmailRequest): GetCaughtEmailRequest.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: GetCaughtEmailRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetCaughtEmailRequest;
+  static deserializeBinaryFromReader(message: GetCaughtEmailRequest, reader: jspb.BinaryReader): GetCaughtEmailRequest;
+}
+
+export namespace GetCaughtEmailRequest {
+  export type AsObject = {
+    namespace: string,
+    id: string,
+  }
+}
+
 export class WatchCaughtEmailsRequest extends jspb.Message {
   getNamespace(): string;
   setNamespace(value: string): void;

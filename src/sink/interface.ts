@@ -22,6 +22,7 @@ export interface StoredMessage extends Message {
 
 export interface Query {
     namespace: string;
+    id?: string;
     podName?: string;
     labelSelector?: {[k: string]: string};
 }

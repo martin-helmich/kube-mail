@@ -1,11 +1,5 @@
-import {Server, ServerCredentials, ServerUnaryCall, ServerWriteableStream, ServiceError} from "grpc";
-import {
-    GetSummaryRequest,
-    ListCaughtEmailsRequest,
-    ListCaughtEmailsResponse,
-    Summary,
-    WatchCaughtEmailsRequest
-} from "./proto/service_pb";
+import {Server, ServerCredentials, ServerUnaryCall, ServerWriteableStream, ServiceError, status} from "grpc";
+import {Email, GetCaughtEmailRequest, GetSummaryRequest, ListCaughtEmailsRequest, ListCaughtEmailsResponse, Summary, WatchCaughtEmailsRequest} from "./proto/service_pb";
 import {RealtimeSink, Sink} from "../sink/interface";
 import {StatisticsRecorder} from "../stats/recorder";
 import {mapMessage} from "./mapping";
@@ -79,6 +73,7 @@ export class GRPCServer {
 
                 if (!namespace) {
                     return cb({
+                        code: status.INVALID_ARGUMENT,
                         name: "MissingArgument",
                         message: "you must supply a 'namespace' argument"
                     }, null);
@@ -93,6 +88,39 @@ export class GRPCServer {
                 response.setEmailList(result.messages.map(mapMessage));
 
                 cb(null, response);
+            },
+
+            getCaughtEmail: async (call: ServerUnaryCall<GetCaughtEmailRequest>, cb: (err: ServiceError|null, res: Email|null) => any): Promise<void> => {
+                const namespace = call.request.getNamespace();
+                const emailID = call.request.getId();
+
+                if (!namespace) {
+                    return cb({
+                        code: status.INVALID_ARGUMENT,
+                        name: "MissingArgument",
+                        message: "you must supply a 'namespace' argument"
+                    }, null)
+                }
+
+                if (!emailID) {
+                    return cb({
+                        code: status.INVALID_ARGUMENT,
+                        name: "MissingArgument",
+                        message: "you must supply a 'id' argument"
+                    }, null)
+                }
+
+                const result = await this.sink.retrieveMessages({id: emailID, namespace});
+                if (result.messages.length < 1) {
+                    return cb({
+                        code: status.NOT_FOUND,
+                        name: "NotFound",
+                        message: "message with given ID not found",
+                    }, null);
+                }
+
+                const mapped = mapMessage(result.messages[0]);
+                cb(null, mapped);
             },
 
             watchCaughtEmails: (call: ServerWriteableStream<WatchCaughtEmailsRequest>): void => {
