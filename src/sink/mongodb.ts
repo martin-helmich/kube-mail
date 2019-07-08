@@ -95,7 +95,7 @@ export class MongodbSink implements RealtimeSink {
             }
         }
 
-        return q;
+        return [q, streamQ];
     }
 
     public async retrieveMessages(query: Query, opts?: RetrieveOptions): Promise<RetrieveResult> {
