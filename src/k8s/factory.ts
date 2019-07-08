@@ -16,10 +16,7 @@ export const buildKubernetesClientFromConfig = (cfg: PolicyConfig, registry: Reg
     }
 
     const client = new MonitoringKubernetesRESTClient(
-        new KubernetesRESTClient(
-            config,
-            {debugFn: require("debug")("k8s:client")}
-        ),
+        new KubernetesRESTClient(config),
         registry
     );
 
