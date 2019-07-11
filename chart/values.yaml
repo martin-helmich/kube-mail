@@ -29,11 +29,11 @@ mongodb:
   replicas: 1
 watcher:
   emailPolicyInformer:
-    selector:
+    selector: {}
       #foo: bar
       #bar: foo
   podInformer:
-    selector:
+    selector: {}
       #foo: bar
       #bar: foo
 resources: {}
