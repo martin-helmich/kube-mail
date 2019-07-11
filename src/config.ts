@@ -52,15 +52,15 @@ export type PolicyConfig = {
     }
 };
 
-export type WatcherConfig = {
+export interface WatcherConfig {
     emailPolicyInformer?: InformerConfig;
     podInformer?: InformerConfig;
 }
 
-export type InformerConfig = {
+export interface InformerConfig {
     selector: InformerConfigSelector;
 };
 
-export type InformerConfigSelector = {
+export interface InformerConfigSelector {
     [s: string]: string;
 };
