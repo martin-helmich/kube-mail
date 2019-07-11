@@ -34,6 +34,10 @@ policy:
 
 watcher:
   emailPolicyInformer:
-    selector: WATCHER_EMAILPOLICYINFORMER_SELECTOR
+    selector:
+      __name: WATCHER_EMAILPOLICYINFORMER_SELECTOR
+      __format: json
   podInformer:
-    selector: WATCHER_PODINFORMER_SELECTOR
+    selector:
+      __name: WATCHER_PODINFORMER_SELECTOR
+      __format: json
