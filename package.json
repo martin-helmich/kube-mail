@@ -19,7 +19,7 @@
     "@types/uuid": "^3.4.4",
     "grpc-tools": "^1.6.6",
     "jest": "^23.6.0",
-    "ts-jest": "^22.4.4",
+    "ts-jest": "^23.10.5",
     "ts-protoc-gen": "^0.9.0",
     "typescript": "^2.8.3"
   },
