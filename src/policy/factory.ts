@@ -5,7 +5,7 @@ import { IKubernetesAPI } from "@mittwald/kubernetes";
 import { KubemailCustomResourceAPI } from "../k8s/api";
 import { CachingLookupStore } from "../k8s/store";
 import * as config from "config";
-import { Informer } from "@mittwald/kubernetes/cache";
+import { Informer, Controller } from "@mittwald/kubernetes/cache";
 import { InformerConfig } from '../config';
 
 export class KubernetesPolicyProviderFactory {
@@ -32,18 +32,17 @@ export class KubernetesPolicyProviderFactory {
         const podStore = new PodStore();
         const podInformer = new Informer(coreAPIv1.pods(), podInformerLabelSelector, podStore);
         const secretStore = new CachingLookupStore(coreAPIv1.secrets());
-        const serverController = smtpServerInformer.start();
-        const policyController = emailPolicyInformer.start();
-        const podController = podInformer.start();
-        const initialized = Promise.all([
+        const initialized = this.initializeController(smtpServerInformer.start(), emailPolicyInformer.start(), podInformer.start());
+        return [
+            new KubernetesPolicyProvider(podStore, emailPolicyStore, smtpServerInformer.store, secretStore, config.get("policy.kubernetes.static")), initialized,
+        ];
+    }
+    private initializeController (serverController: Controller, policyController: Controller, podController: Controller): Promise<void> {
+        return Promise.all([
             serverController.waitForInitialList(),
             policyController.waitForInitialList(),
             podController.waitForInitialList(),
         ]).then(() => {
         });
-        return [
-            new KubernetesPolicyProvider(podStore, emailPolicyStore, smtpServerInformer.store, secretStore, config.get("policy.kubernetes.static")),
-            initialized,
-        ];
     }
 }
