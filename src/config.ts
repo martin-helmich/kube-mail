@@ -52,13 +52,13 @@ export type PolicyConfig = {
     }
 };
 
-export interface IWatcherConfig {
-    emailPolicyInformer?: InformerConfig;
-    podInformer?: InformerConfig;
+export interface IIWatcherConfig {
+    emailPolicyInformer?: IInformerConfig;
+    podInformer?: IInformerConfig;
 }
 
 export interface IInformerConfig {
-    selector: InformerConfigSelector;
+    selector: IInformerConfigSelector;
 }
 
 export interface IInformerConfigSelector {
