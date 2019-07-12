@@ -6,7 +6,7 @@ export type Config = {
     sink: SinkConfig;
     recorder: RecorderConfig;
     policy: PolicyConfig;
-    watcher?: WatcherConfig;
+    watcher?: IIWatcherConfig;
 }
 
 export type APIConfig = {
