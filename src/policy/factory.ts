@@ -1,12 +1,12 @@
-import {KubernetesPolicyProvider} from "./kubernetes";
-import {PolicyStore} from "../k8s/policy_store";
-import {PodStore} from "../k8s/pod_store";
-import {IKubernetesAPI} from "@mittwald/kubernetes";
-import {KubemailCustomResourceAPI} from "../k8s/api";
-import {CachingLookupStore} from "../k8s/store";
+import { KubernetesPolicyProvider } from "./kubernetes";
+import { PolicyStore } from "../k8s/policy_store";
+import { PodStore } from "../k8s/pod_store";
+import { IKubernetesAPI } from "@mittwald/kubernetes";
+import { KubemailCustomResourceAPI } from "../k8s/api";
+import { CachingLookupStore } from "../k8s/store";
 import * as config from "config";
-import {Informer} from "@mittwald/kubernetes/cache";
-import {InformerConfig} from '../config';
+import { Informer } from "@mittwald/kubernetes/cache";
+import { InformerConfig } from '../config';
 
 export class KubernetesPolicyProviderFactory {
     public constructor(private api: IKubernetesAPI & KubemailCustomResourceAPI) {
@@ -47,3 +47,4 @@ export class KubernetesPolicyProviderFactory {
         ];
     }
 }
+
