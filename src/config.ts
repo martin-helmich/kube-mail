@@ -6,6 +6,7 @@ export type Config = {
     sink: SinkConfig;
     recorder: RecorderConfig;
     policy: PolicyConfig;
+    watcher?: IIWatcherConfig;
 }
 
 export type APIConfig = {
@@ -50,3 +51,16 @@ export type PolicyConfig = {
         config: string;
     }
 };
+
+export interface IIWatcherConfig {
+    emailPolicyInformer?: IInformerConfig;
+    podInformer?: IInformerConfig;
+}
+
+export interface IInformerConfig {
+    selector: IInformerConfigSelector;
+}
+
+export interface IInformerConfigSelector {
+    [s: string]: string;
+}
