@@ -18,21 +18,40 @@ export class KubernetesPolicyProviderFactory {
         const coreAPIv1 = this.api.core().v1();
         const smtpServerInformer = new Informer(kubemailAPIv1a1.smtpServers());
         const emailPolicyInformerLabelSelectorConfig = config.get<IInformerConfig>('watcher.emailPolicyInformer');
+
         let emailPolicyInformerLabelSelector = {};
         if (emailPolicyInformerLabelSelectorConfig && emailPolicyInformerLabelSelectorConfig.selector) {
             emailPolicyInformerLabelSelector = emailPolicyInformerLabelSelectorConfig.selector;
         }
+
         const emailPolicyStore = new PolicyStore();
         const emailPolicyInformer = new Informer(kubemailAPIv1a1.emailPolicies(), emailPolicyInformerLabelSelector, emailPolicyStore);
         const podInformerLabelSelectorConfig = config.get<IInformerConfig>('watcher.podInformer');
+
         let podInformerLabelSelector = {};
         if (podInformerLabelSelectorConfig && podInformerLabelSelectorConfig.selector) {
             podInformerLabelSelector = podInformerLabelSelectorConfig.selector;
         }
-        const podStore = new PodStore();
+
+        const podStore = new PodStore(new CachingLookupStore(coreAPIv1.pods()), coreAPIv1.pods());
         const podInformer = new Informer(coreAPIv1.pods(), podInformerLabelSelector, podStore);
         const secretStore = new CachingLookupStore(coreAPIv1.secrets());
-        const initialized = this.initializeController(smtpServerInformer.start(), emailPolicyInformer.start(), podInformer.start());
+
+        const podController = podInformer.start();
+        const emailPolicyController = emailPolicyInformer.start();
+        const smtpServerController = smtpServerInformer.start();
+
+        const initialized = this.initializeController(smtpServerController, emailPolicyController, podController);
+
+        Promise.all([
+            podController.waitUntilFinish(),
+            emailPolicyController.waitUntilFinish(),
+            smtpServerController.waitUntilFinish(),
+        ]).catch(err => {
+            console.error("error while listening for Kubernetes objects", err);
+            process.exit(1);
+        });
+
         return [
             new KubernetesPolicyProvider(podStore, emailPolicyStore, smtpServerInformer.store, secretStore, config.get("policy.kubernetes.static")), initialized,
         ];

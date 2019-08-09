@@ -6,11 +6,11 @@ describe("PolicyStore", () => {
         metadata: {name: "default", namespace: "default"},
         spec: {
             default: true,
-            smtp: {
-                credentials: {name: "default-smtp"},
-                server: {name: "default-smtp"},
-            },
             sink: {
+                smtp: {
+                    credentials: {name: "default-smtp"},
+                    server: {name: "default-smtp"},
+                },
                 catch: {retentionDays: 7}
             }
         }
@@ -20,11 +20,11 @@ describe("PolicyStore", () => {
         metadata: {name: "foo", namespace: "default"},
         spec: {
             podSelector: {matchLabels: {"foo": "bar"}},
-            smtp: {
-                credentials: {name: "default-smtp"},
-                server: {name: "default-smtp"},
-            },
             sink: {
+                smtp: {
+                    credentials: {name: "default-smtp"},
+                    server: {name: "default-smtp"},
+                },
                 catch: {retentionDays: 7}
             }
         }
@@ -34,11 +34,11 @@ describe("PolicyStore", () => {
         metadata: {name: "bar", namespace: "default"},
         spec: {
             podSelector: {matchLabels: {"bar": "123", "baz": "321"}},
-            smtp: {
-                credentials: {name: "default-smtp"},
-                server: {name: "default-smtp"},
-            },
             sink: {
+                smtp: {
+                    credentials: {name: "default-smtp"},
+                    server: {name: "default-smtp"},
+                },
                 catch: {retentionDays: 7}
             }
         }

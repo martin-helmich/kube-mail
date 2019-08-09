@@ -19,7 +19,7 @@ export class KubernetesPolicyProvider implements PolicyProvider {
     public async getByClientIP(clientIP: string): Promise<Policy | undefined> {
         debug("resolving policy for pod IP %s", clientIP);
 
-        let pod = this.podStore.getByPodIP(clientIP);
+        let pod = await this.podStore.getByPodIP(clientIP);
         if (!pod) {
             if (this.staticPolicy) {
                 pod = {
