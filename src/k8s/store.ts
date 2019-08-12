@@ -31,7 +31,7 @@ export class InMemoryStore<R extends MetadataObject> implements Store<R> {
 export class CachingLookupStore<R extends MetadataObject> implements Store<R> {
     private cache = new Map<string, CacheEntry<R>>();
 
-    public constructor(private api: INamespacedResourceClient<R, any, any>) {
+    public constructor(private api: INamespacedResourceClient<any, any, any, R>) {
     }
 
     store(obj: R): void {

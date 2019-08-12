@@ -18,10 +18,10 @@
     "@types/protobufjs": "^5.0.31",
     "@types/uuid": "^3.4.4",
     "grpc-tools": "^1.6.6",
-    "jest": "^23.6.0",
-    "ts-jest": "^22.4.4",
+    "jest": "^24.0.0",
+    "ts-jest": "^24.0.0",
     "ts-protoc-gen": "^0.9.0",
-    "typescript": "^2.8.3"
+    "typescript": "^3.5.0"
   },
   "scripts": {
     "compile": "tsc -p tsconfig.build.json",
@@ -30,7 +30,7 @@
     "generate": "mkdir -p dist/grpc && ./node_modules/.bin/grpc_tools_node_protoc --js_out=import_style=commonjs,binary:dist/grpc --grpc_out=dist/grpc --plugin=\"protoc-gen-ts=./node_modules/.bin/protoc-gen-ts\" --ts_out=src/grpc proto/service.proto"
   },
   "dependencies": {
-    "@mittwald/kubernetes": "^2.3.1",
+    "@mittwald/kubernetes": "^3.0.0",
     "@types/mailparser": "^2.4.0",
     "@types/smtp-server": "^3.5.1",
     "config": "^1.30.0",
@@ -51,12 +51,12 @@
   "jest": {
     "globals": {
       "ts-jest": {
-        "tsConfigFile": "tsconfig.base.json"
+        "tsConfig": "tsconfig.base.json"
       }
     },
     "testEnvironment": "node",
     "transform": {
-      ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+      ".(ts|tsx)": "ts-jest"
     },
     "testRegex": "/tests/.*test.*$",
     "moduleFileExtensions": [
