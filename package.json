@@ -38,7 +38,7 @@
     "elasticsearch": "^15.4.1",
     "email-addresses": "^3.0.3",
     "express": "^4.16.3",
-    "google-protobuf": "^3.6.0",
+    "google-protobuf": "^3.12.2",
     "grpc": "^1.13.0",
     "ip-address": "^5.8.9",
     "js-yaml": "^3.11.0",
