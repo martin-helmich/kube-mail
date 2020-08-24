@@ -16,7 +16,7 @@
     "@types/mongodb": "^3.5.26",
     "@types/node": "12",
     "@types/nodemailer": "^4.6.8",
-    "@types/protobufjs": "^5.0.31",
+    "@types/protobufjs": "^6.0.0",
     "@types/smtp-server": "^3.5.4",
     "@types/uuid": "^3.4.4",
     "grpc-tools": "^1.9.1",
