@@ -171,7 +171,7 @@ export class ElasticsearchSink implements Sink {
         debug("querying by %o", query);
 
         const term = ElasticsearchSink.queryToSearchTerm(query);
-        const result = await this.client.search({
+        const result = await this.client.search<StoredMessage>({
             index,
             type,
             from: offset,
@@ -182,7 +182,7 @@ export class ElasticsearchSink implements Sink {
         });
 
         return {
-            messages: result.hits.hits.map(d => ({id: (d._source as any).id || d._id, ...d._source} as StoredMessage)),
+            messages: result.hits.hits.map(d => ({...d._source, id: (d._source as any).id || d._id})),
             totalCount: result.hits.total,
         };
     }

@@ -83,12 +83,18 @@ export const mapMessage = (m: StoredMessage) => {
     env.setMailFrom(m.envelope.mailFrom);
     env.setRcptToList(m.envelope.rcptTo);
 
-    msgBody.setText(m.mail.text);
+    if (m.mail.text) {
+        msgBody.setText(m.mail.text);
+    }
+
     if (typeof m.mail.html === "string") {
         msgBody.setHtml(m.mail.html);
     }
 
-    msg.setSubject(m.mail.subject);
+    if (m.mail.subject) {
+        msg.setSubject(m.mail.subject);
+    }
+
     msg.setBody(msgBody);
     msg.setToList(mapFuckValue(m.mail.to, mapEmailAddressToString));
     msg.setFromList(mapFuckValue(m.mail.from, mapEmailAddressToString));
