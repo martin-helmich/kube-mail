@@ -41,7 +41,7 @@
     "google-protobuf": "^3.6.0",
     "grpc": "^1.24.3",
     "ip-address": "^5.8.9",
-    "js-yaml": "^3.13.1",
+    "js-yaml": "^3.14.0",
     "mailparser": "^2.8.1",
     "mongodb": "^3.6.0",
     "nodemailer": "^4.7.0",
