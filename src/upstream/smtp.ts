@@ -66,6 +66,7 @@ export class SMTPUpstream {
             host: server,
             port: port,
             secure: tls,
+            ignoreTLS: !tls,
             name,
             connectionTimeout,
             socketTimeout,

@@ -6,11 +6,13 @@ export type Config = {
 export type PolicyConfig = {
     provider: "kubernetes",
     kubernetes: {
+        static?: string;
+    } & ({
         inCluster: true
     } | {
         inCluster?: false;
         config: string;
-    }
+    })
 };
 
 export interface IIWatcherConfig {
@@ -19,7 +21,7 @@ export interface IIWatcherConfig {
 }
 
 export interface IInformerConfig {
-    selector: IInformerConfigSelector;
+    selector?: IInformerConfigSelector;
 }
 
 export interface IInformerConfigSelector {

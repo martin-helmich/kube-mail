@@ -1,21 +1,33 @@
-import { KubernetesPolicyProvider } from "./kubernetes";
-import { PolicyStore } from "../k8s/policy_store";
-import { PodStore } from "../k8s/pod_store";
-import { IKubernetesAPI } from "@mittwald/kubernetes";
-import { KubemailCustomResourceAPI } from "../k8s/api";
-import { CachingLookupStore } from "../k8s/store";
-import * as config from "config";
-import { Informer, Controller } from "@mittwald/kubernetes/cache";
-import { IInformerConfig } from '../config';
+import {KubernetesPolicyProvider} from "./kubernetes";
+import {PolicyStore} from "../k8s/policy_store";
+import {PodStore} from "../k8s/pod_store";
+import {IKubernetesAPI} from "@mittwald/kubernetes";
+import {KubemailCustomResourceAPI} from "../k8s/api";
+import {CachingLookupStore} from "../k8s/store";
+import {Controller, Informer} from "@mittwald/kubernetes/cache";
+import {IInformerConfig} from '../config';
 import {Pod, PodWithStatus} from "@mittwald/kubernetes/types/core/v1";
 import {EmailPolicy} from "../k8s/types/v1alpha1/emailpolicy";
 
 export class KubernetesPolicyProviderFactory {
-    public constructor(private api: IKubernetesAPI & KubemailCustomResourceAPI) {
+    private readonly api: IKubernetesAPI & KubemailCustomResourceAPI
+    private readonly emailPolicyInformerConfig: IInformerConfig;
+    private readonly podInformerConfig: IInformerConfig;
+    private readonly staticPolicy: string | null;
 
+    public constructor(
+        api: IKubernetesAPI & KubemailCustomResourceAPI,
+        emailPolicyInformerConfig: IInformerConfig,
+        podInformerConfig: IInformerConfig,
+        staticPolicy: string | null,
+    ) {
+        this.api = api;
+        this.emailPolicyInformerConfig = emailPolicyInformerConfig;
+        this.podInformerConfig = podInformerConfig;
+        this.staticPolicy = staticPolicy;
     }
 
-    public build(): [KubernetesPolicyProvider, Promise<void>] {
+    public build(): [KubernetesPolicyProvider, Promise<void>, () => Promise<void>] {
         const kubemailAPIv1a1 = this.api.kubemail().v1alpha1();
         const coreAPIv1 = this.api.core().v1();
 
@@ -40,14 +52,21 @@ export class KubernetesPolicyProviderFactory {
             process.exit(1);
         });
 
-        return [
-            new KubernetesPolicyProvider(podStore, emailPolicyStore, smtpServerInformer.store, secretStore, config.get("policy.kubernetes.static")), initialized,
-        ];
+        const policyProvider = new KubernetesPolicyProvider(podStore, emailPolicyStore, smtpServerInformer.store, secretStore, this.staticPolicy);
+        const stop = async () => {
+            await Promise.all([
+                smtpServerController.stop(),
+                emailPolicyController.stop(),
+                podController.stop(),
+            ]);
+        };
+
+        return [policyProvider, initialized, stop];
     }
 
     private buildEmailPolicyInformer(): [Informer<EmailPolicy>, PolicyStore] {
         const kubemailAPIv1a1 = this.api.kubemail().v1alpha1();
-        const emailPolicyInformerLabelSelectorConfig = config.get<IInformerConfig>('watcher.emailPolicyInformer');
+        const emailPolicyInformerLabelSelectorConfig = this.emailPolicyInformerConfig;
 
         let emailPolicyInformerLabelSelector = {};
         if (emailPolicyInformerLabelSelectorConfig && emailPolicyInformerLabelSelectorConfig.selector) {
@@ -57,12 +76,11 @@ export class KubernetesPolicyProviderFactory {
         const emailPolicyStore = new PolicyStore();
 
         return [new Informer(kubemailAPIv1a1.emailPolicies(), emailPolicyInformerLabelSelector, emailPolicyStore), emailPolicyStore];
-
     }
 
     private buildPodInformer(): [Informer<Pod, PodWithStatus>, PodStore] {
         const coreAPIv1 = this.api.core().v1();
-        const podInformerLabelSelectorConfig = config.get<IInformerConfig>('watcher.podInformer');
+        const podInformerLabelSelectorConfig = this.podInformerConfig;
 
         let podInformerLabelSelector = {};
         if (podInformerLabelSelectorConfig && podInformerLabelSelectorConfig.selector) {
@@ -73,7 +91,7 @@ export class KubernetesPolicyProviderFactory {
         return [new Informer(coreAPIv1.pods(), podInformerLabelSelector, podStore), podStore];
     }
 
-    private initializeController (serverController: Controller, policyController: Controller, podController: Controller): Promise<void> {
+    private initializeController(serverController: Controller, policyController: Controller, podController: Controller): Promise<void> {
         return Promise.all([
             serverController.waitForInitialList(),
             policyController.waitForInitialList(),

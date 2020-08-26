@@ -8,6 +8,7 @@ on:
   pull_request:
 jobs:
   compile:
+    name: Compile TypeScript
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -18,6 +19,7 @@ jobs:
       - run: npm run compile
 
   test:
+    name: Run unit test suite
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -26,3 +28,57 @@ jobs:
           node-version: "12.x"
       - run: npm ci
       - run: npm run test
+
+  helm:
+    name: Verify Helm chart
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Helm
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+      - name: Lint Helm chart
+        run: |
+          helm lint ./chart
+      - name: Render Helm chart
+        run: |
+          helm template test ./chart > /dev/null
+
+  integration:
+    name: Run integation test suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "12.x"
+      - uses: engineerd/setup-kind@v0.4.0
+      - run: npm ci
+      - name: Testing
+        run: |
+          kubectl cluster-info
+          kubectl get pods -n kube-system
+
+          kind get kubeconfig > ./kind-kubeconfig
+      - name: Build and load image
+        run: |
+          docker build -t kube-mail .
+          kind load docker-image kube-mail
+      - name: Setup Helm
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+      - name: Install kube-mail in KinD
+        run: |
+          helm install --set image.repository=kube-mail --set image.pullPolicy=Never kube-mail ./chart
+      - name: Run tests
+        run: |
+          POD_NAME=$(kubectl get po -l app.kubernetes.io/name=kube-mail -o=jsonpath='{.items[0].metadata.name}')
+          kubectl apply -f tests/integration/setup
+
+          kubectl wait pod/upstream --for=condition=ready
+          kubectl wait pod/$POD_NAME --for=condition=ready
+
+          kubectl port-forward upstream 8080:8080 &
+          kubectl port-forward $POD_NAME 9100:9100 &
+
+          npm run test:integration

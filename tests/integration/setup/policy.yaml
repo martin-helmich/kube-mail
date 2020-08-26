@@ -1,0 +1,13 @@
+apiVersion: kube-mail.helmich.me/v1alpha1
+kind: EmailPolicy
+metadata:
+  name: default
+spec:
+  podSelector:
+    matchLabels:
+      foo: bar
+  sink:
+    smtp:
+      server:
+        name: default-smtp
+        namespace: default

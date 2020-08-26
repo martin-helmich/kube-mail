@@ -2,7 +2,12 @@
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: kube-mail:policies
+  name: {{ template "chart.fullname" . }}-policies
+  labels:
+    app.kubernetes.io/name: {{ template "chart.name" . }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
 rules:
 - apiGroups: ["kube-mail.helmich.me"]
   resources: ["emailpolicies", "smtpservers"]
@@ -21,7 +26,12 @@ rules:
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: kube-mail:podwatcher
+  name: {{ template "chart.fullname" . }}-podwatcher
+  labels:
+    app.kubernetes.io/name: {{ template "chart.name" . }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
 rules:
 - apiGroups: [""]
   resources: ["pods"]
@@ -36,32 +46,47 @@ kind: ServiceAccount
 apiVersion: v1
 metadata:
   name: {{ template "chart.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ template "chart.name" . }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
 
 
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: kube-mail:{{ template "chart.fullname" . }}:podwatcher
+  name: {{ template "chart.fullname" . }}-podwatcher
+  labels:
+    app.kubernetes.io/name: {{ template "chart.name" . }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
 subjects:
 - kind: ServiceAccount
   name: {{ template "chart.fullname" . }}
   namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
-  name: kube-mail:podwatcher
+  name: {{ template "chart.fullname" . }}-podwatcher
   apiGroup: rbac.authorization.k8s.io
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: kube-mail:{{ template "chart.fullname" . }}:policies
+  name: {{ template "chart.fullname" . }}-policies
+  labels:
+    app.kubernetes.io/name: {{ template "chart.name" . }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
 subjects:
 - kind: ServiceAccount
   name: {{ template "chart.fullname" . }}
   namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
-  name: kube-mail:policies
+  name: {{ template "chart.fullname" . }}-policies
   apiGroup: rbac.authorization.k8s.io
 {{- end }}

@@ -1,0 +1,35 @@
+apiVersion: kube-mail.helmich.me/v1alpha1
+kind: SMTPServer
+metadata:
+  name: default-smtp
+spec:
+  server: upstream
+  port: 25
+  tls: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: upstream
+spec:
+  selector:
+    app: upstream
+  ports:
+    - targetPort: 1025
+      port: 25
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: upstream
+  labels:
+    app: upstream
+spec:
+  containers:
+    - name: smtp
+      ports:
+        - containerPort: 1025
+        - containerPort: 8080
+      image: kube-mail
+      imagePullPolicy: Never
+      command: ["/usr/local/bin/node", "dist/tester.js"]

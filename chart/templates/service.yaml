@@ -3,10 +3,10 @@ kind: Service
 metadata:
   name: {{ .Values.service.name }}
   labels:
-    app: {{ template "chart.name" . }}
-    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    app.kubernetes.io/name: {{ template "chart.name" . }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -15,5 +15,5 @@ spec:
       protocol: TCP
       name: smtp
   selector:
-    app: {{ template "chart.name" . }}
-    release: {{ .Release.Name }}
+    app.kubernetes.io/name: {{ template "chart.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}

@@ -15,7 +15,7 @@ export class KubernetesPolicyProvider implements PolicyProvider {
                        private policyStore: PolicyStore,
                        private smtpServerStore: Store<SMTPServer>,
                        private secretStore: Store<Secret>,
-                       private staticPolicy: string | undefined) {
+                       private staticPolicy: string | null) {
     }
 
     public async getByClientIP(clientIP: string): Promise<Policy | undefined> {

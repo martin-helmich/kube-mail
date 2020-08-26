@@ -1,5 +1,5 @@
-import {EmailPolicy} from "../../src/k8s/types/v1alpha1/emailpolicy";
-import {PolicyStore} from "../../src/k8s/policy_store";
+import {EmailPolicy} from "../../../src/k8s/types/v1alpha1/emailpolicy";
+import {PolicyStore} from "../../../src/k8s/policy_store";
 
 describe("PolicyStore", () => {
     const defaultPolicy: EmailPolicy = {
