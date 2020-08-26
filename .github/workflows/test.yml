@@ -44,6 +44,21 @@ jobs:
         run: |
           helm template test ./chart > /dev/null
 
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "12.x"
+      - run: npm ci
+      - run: npm run generate
+      - name: assert no files are modified
+        run: |
+          git diff | cat
+          git status --porcelain=v1
+          test $(git status --porcelain=v1 | wc -l) -eq 0
+
   integration:
     name: Run integation test suite
     runs-on: ubuntu-latest

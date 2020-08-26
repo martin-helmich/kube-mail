@@ -6,12 +6,15 @@ import {EmailPolicy} from "./types/v1alpha1/emailpolicy";
 import {SMTPServer} from "./types/v1alpha1/smtpserver";
 import {Registry} from "prom-client";
 
-export const apiGroup = "kube-mail.helmich.me/v1alpha1";
-export type APIGroup = "kube-mail.helmich.me/v1alpha1";
+export const apiGroup = "kube-mail.helmich.me";
+export const apiVersion = "v1alpha1";
+export const apiGroupVersion = `${apiGroup}/${apiVersion}`;
+
+export type APIGroupVersion = typeof apiGroupVersion;
 
 export interface KubemailV1Alpha1API {
-    emailPolicies(): INamespacedResourceClient<EmailPolicy, "EmailPolicy", APIGroup>
-    smtpServers(): INamespacedResourceClient<SMTPServer, "SMTPServer", APIGroup>
+    emailPolicies(): INamespacedResourceClient<EmailPolicy, "EmailPolicy", APIGroupVersion>
+    smtpServers(): INamespacedResourceClient<SMTPServer, "SMTPServer", APIGroupVersion>
 }
 
 export interface KubemailAPI {
@@ -30,14 +33,14 @@ export class KubemailCustomResourceAPI implements KubemailCustomResourceAPIInter
         return {
             v1alpha1: () => ({
                 emailPolicies: () => new CustomResourceClient(
-                    new NamespacedResourceClient(this.restClient, `/apis/${apiGroup}`, "/emailpolicies", this.registry),
+                    new NamespacedResourceClient(this.restClient, `/apis/${apiGroupVersion}`, "/emailpolicies", this.registry),
                     "EmailPolicy",
-                    apiGroup,
+                    apiGroupVersion,
                 ),
                 smtpServers: () => new CustomResourceClient(
-                    new NamespacedResourceClient(this.restClient, `/apis/${apiGroup}`, "/smtpservers", this.registry),
+                    new NamespacedResourceClient(this.restClient, `/apis/${apiGroupVersion}`, "/smtpservers", this.registry),
                     "SMTPServer",
-                    apiGroup,
+                    apiGroupVersion,
                 )
             }),
         };
