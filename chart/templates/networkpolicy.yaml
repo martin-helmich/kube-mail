@@ -10,24 +10,6 @@ spec:
   policyTypes:
   - Ingress
   ingress:
-  {{- if .Values.rest.enabled }}
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          "kube-mail.helmich.me/api-access": "true"
-    ports:
-    - protocol: TCP
-      port: {{ .Values.rest.service.internalPort }}
-  {{- end }}
-  {{- if .Values.grpc.enabled }}
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          "kube-mail.helmich.me/api-access": "true"
-    ports:
-    - protocol: TCP
-      port: {{ .Values.grpc.service.internalPort }}
-  {{- end }}
   - from:
     - namespaceSelector:
         matchLabels:

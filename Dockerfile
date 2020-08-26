@@ -7,10 +7,9 @@ COPY package*.json /app/
 RUN npm install -g npm@^6.1.0 && npm install
 
 COPY tsconfig* /app/
-COPY proto /app/proto
 COPY src /app/src
 
-RUN npm run generate && npm run compile
+RUN npm run compile
 
 FROM node:12
 

@@ -6,14 +6,10 @@ export type SMTPSink = {
         name: string;
         namespace?: string;
     };
-    credentials: {
+    credentials?: {
         name: string;
         namespace?: string;
     };
-}
-
-export type CatchSink = {
-    retentionDays?: number;
 }
 
 export type EmailPolicySpec = {
@@ -23,7 +19,7 @@ export type EmailPolicySpec = {
         maximum: number;
         period?: "hour" | "minute";
     };
-    sink: {smtp: SMTPSink} | {catch: CatchSink};
+    sink: {smtp: SMTPSink};
 };
 
 export type EmailPolicy = MetadataObject & {

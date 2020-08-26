@@ -11,7 +11,6 @@ describe("PolicyStore", () => {
                     credentials: {name: "default-smtp"},
                     server: {name: "default-smtp"},
                 },
-                catch: {retentionDays: 7}
             }
         }
     };
@@ -25,7 +24,6 @@ describe("PolicyStore", () => {
                     credentials: {name: "default-smtp"},
                     server: {name: "default-smtp"},
                 },
-                catch: {retentionDays: 7}
             }
         }
     };
@@ -39,7 +37,6 @@ describe("PolicyStore", () => {
                     credentials: {name: "default-smtp"},
                     server: {name: "default-smtp"},
                 },
-                catch: {retentionDays: 7}
             }
         }
     };

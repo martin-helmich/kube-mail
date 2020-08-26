@@ -23,7 +23,8 @@ kube-mail is a policy-based SMTP server designed for running in a Kubernetes clu
 - [Custom Resources](#custom-resources)
   - [`SMTPServer` resources](#smtpserver-resources)
   - [`EmailPolicy` resources](#emailpolicy-resources)
-- [APIs](#apis)
+- [How-Tos](#how-tos)
+  - [Forward all emails from a Pod into a mail catcher](#forward-all-emails-from-a-pod-into-a-mail-catcher)
 - [Sending mails from within a Pod](#sending-mails-from-within-a-pod)
   - [PHP and ssmtp](#php-and-ssmtp)
 
@@ -66,10 +67,7 @@ spec:
 
 ### `EmailPolicy` resources
 
-An `EmailPolicy` defines what kube-mail should do with mails received from a certain pod. An email policy may be configured to do one of two things:
-
-- forward the received email to one of the SMTP servers configured using the `SMTPServer` resources
-- store the email in its internal database for later retrieval (useful for development environments that should _not_ actually send emails out into the world).
+An `EmailPolicy` defines what kube-mail should do with mails received from a certain pod. An email policy will forward the received email to one of the SMTP servers configured using the `SMTPServer` resources.
 
 A forwarding email policy is defined like follows:
 
@@ -109,16 +107,60 @@ Concerning the individual properties:
       <dt><code>.spec.sink.smtp.server</code></dt>
       <dd><code>server</code> is a reference to a <code>SMTPServer</code> resource. It may be placed in a different namespace.</dd>
       <dt><code>.spec.sink.smtp.credentials</code></dt>
-      <dd><code>credentials</code> is a reference to a <code>Secret</code> resource with a <code>"username"</code> and <code>"password"</code> key. It may be placed in a different namespace. <b>NOTE</b>: This is a required value! Unauthenticated SMTP is not supported by kube-mail on principle.</dd>
+      <dd><code>credentials</code> is a reference to a <code>Secret</code> resource with a <code>"username"</code> and <code>"password"</code> key. It may be placed in a different namespace. <b>NOTE</b>: If omitted, kube-mail will attempt an unauthenticated connection to the SMTP server.</dd>
     </dl>
   </dd>
 </dl>
 
-## APIs
+## How-Tos
 
-As noted, kube-mail may be configured to NOT forward received emails, but to store them in its internal database instead. This is useful for development environments that should not be allowed to send emails out into the world.
+### Forward all emails from a Pod into a mail catcher
 
-To interact with these intercepted emails, kube-mail offers a gRPC API to retrieve them. This gRPC service is described in [`./proto/service.proto`](./proto/service.proto). Use one of the [gRPC client libraries](https://grpc.io/docs/languages/) to build your own client.
+Forwarding all outgoing emails into a mail catcher (like [MailHog](https://github.com/mailhog/MailHog)) is a common use case in development environments, where an application should not be allowed to actually send emails out into the world. To configure kube-mail to forward all emails into a mail catcher, proceed as follows.
+
+1. Make sure that kube-mail is up and running in a namespace of your choice (for this example, we'll assume that kube-mail is running in the `kubemail-system` namespace).
+
+1. Install the mail catcher of your choice. MailHog, for example, has a [Helm chart](https://github.com/codecentric/helm-charts/tree/master/charts/mailhog) that makes it easy to install:
+
+    ```
+    $ helm repo add codecentric https://codecentric.github.io/helm-charts
+    $ helm install \
+        --namespace kubemail-system \
+        --name mailhog \
+        codecentric/mailhog
+    ```
+
+1. Configure an `SMTPServer` resource pointing to your MailHog service:
+
+    ```yaml
+    apiVersion: kube-mail.helmich.me/v1alpha1
+    kind: SMTPServer
+    metadata:
+      name: mailhog
+      namespace: kubemail-system
+    spec:
+      server: mailhog.kubemail-system.svc.cluster.local
+      port: 1025
+      tls: false
+    ```
+
+1. Configure an `EmailPolicy` to catch emails from a Pod and forward them to the configured `SMTPServer`:
+
+    ```yaml
+    apiVersion: kube-mail.helmich.me/v1alpha1
+    kind: EmailPolicy
+    metadata:
+      name: pod-to-mailhog
+    spec:
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: my-name
+      sink:
+        smtp:
+          server:
+            name: mailhog
+            namespace: kubemail-system
+    ```
 
 ## Sending mails from within a Pod
 

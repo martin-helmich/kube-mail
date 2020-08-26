@@ -1,52 +1,25 @@
 import {SMTPServer} from "smtp-server";
 import {SMTPBackend} from "./backend";
-import {ParserImpl} from "./sink/parser";
-import {Client} from "elasticsearch";
 import {SMTPUpstream} from "./upstream/smtp";
-import {APIServer} from "./api";
 import {register} from "prom-client";
 import * as config from "config";
-import {buildSinkFromConfig} from "./sink/factory";
-import {PolicyConfig, RecorderConfig, SinkConfig} from "./config";
-import {buildRecorderFromConfig} from "./stats/factory";
+import {PolicyConfig} from "./config";
 import {buildKubernetesClientFromConfig} from "./k8s/factory";
 import {KubernetesPolicyProviderFactory} from "./policy/factory";
 import {MonitoringServer} from "./monitoring";
-import {GRPCServer} from "./grpc/server";
-import {MongoClient} from "mongodb";
+import {PrometheusRecorder} from "./stats/recorder";
 
 console.log("starting");
 
 (async () => {
-    const client = new Client({host: config.get("elasticsearch.host")});
-    const mongo = (await MongoClient.connect(config.get("mongodb.url"), {useNewUrlParser: true}));
-    const db = mongo.db();
-
-    const debug = require("debug")("kubemail:main");
-    const parser = new ParserImpl();
-    const sink = buildSinkFromConfig(config.get<SinkConfig>("sink"), client, db);
-    const recorder = buildRecorderFromConfig(config.get<RecorderConfig>("recorder"), client, db);
-
-    if (sink.setup) {
-        debug("setting up sink");
-        await sink.setup();
-    }
-
-    if (recorder.setup) {
-        debug("setting up recorder");
-        await recorder.setup();
-    }
-
     const api = buildKubernetesClientFromConfig(config.get<PolicyConfig>("policy"), register);
 
     const providerFactory = new KubernetesPolicyProviderFactory(api);
     const [provider, providerInitialized] = providerFactory.build();
 
+    const recorder = new PrometheusRecorder(register);
     const upstream = new SMTPUpstream();
-    const backend = new SMTPBackend(provider, parser, recorder, sink, upstream);
-
-    const apiServer = new APIServer({sink, recorder});
-    const grpcServer = new GRPCServer({sink, recorder});
+    const backend = new SMTPBackend(provider, recorder, upstream);
 
     const smtpServer = new SMTPServer({
         authOptional: true,
@@ -62,15 +35,6 @@ console.log("starting");
     await providerInitialized;
 
     monitoringServer.listen(9100);
-
-    if (config.get<boolean>("rest.enabled")) {
-        apiServer.listen(config.get<number>("rest.port"));
-    }
-
-    if (config.get<boolean>("grpc.enabled")) {
-        grpcServer.listen(config.get<number>("grpc.port"));
-    }
-
     smtpServer.listen(1025);
 })().catch(err => {
     console.error(err);

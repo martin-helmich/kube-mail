@@ -4,22 +4,15 @@ export type SourceReference = {
     labels?: { [k: string]: string };
 }
 
-export type CatchPolicy = {
-    id: string;
-    type: "catch";
-    sourceReference: SourceReference;
-    retention?: number
-}
-
 export type ForwardPolicy = {
     id: string;
-    type: "forward";
     sourceReference: SourceReference;
     ratelimit?: {
         maximum: number;
         limitPeriod: "hour" | "minute";
     };
     smtp: {
+        name: string;
         server: string;
         port: number;
         tls?: boolean;
@@ -33,7 +26,7 @@ export type ForwardPolicy = {
     };
 }
 
-export type Policy = CatchPolicy | ForwardPolicy;
+export type Policy = ForwardPolicy;
 
 export interface PolicyProvider {
     getByClientIP(clientIP: string): Promise<Policy | undefined>;

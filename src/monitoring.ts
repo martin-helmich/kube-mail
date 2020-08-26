@@ -1,5 +1,6 @@
 import {Application} from "express";
 import * as express from "express";
+import {register} from "prom-client";
 
 const debug = require("debug")("kubemail:monitoring");
 
@@ -16,6 +17,10 @@ export class MonitoringServer {
         this.app.get("/status", (req, res) => {
             res.status(204).end();
         });
+
+        this.app.get("/metrics", (req, res) => {
+            res.send(register.metrics());
+        })
     }
 
     public listen(port: number) {

@@ -4,6 +4,8 @@ import {PodStore} from "../k8s/pod_store";
 import {SMTPServer} from "../k8s/types/v1alpha1/smtpserver";
 import {Secret} from "@mittwald/kubernetes/types/core/v1";
 import {Store} from "../k8s/store";
+import {ObjectMeta} from "@mittwald/kubernetes/types/meta/v1";
+import {MetadataObject} from "@mittwald/kubernetes/types/meta";
 
 const debug = require("debug")("policy:k8s");
 
@@ -74,51 +76,43 @@ export class KubernetesPolicyProvider implements PolicyProvider {
 
         debug("policy found: %o", policy.metadata.name);
 
-        if ("catch" in spec.sink) {
-            return {
-                type: "catch",
-                id: policy.metadata.namespace + "/" + policy.metadata.name,
-                sourceReference,
-                retention: spec.sink.catch.retentionDays,
-            };
-        }
-
         if ("smtp" in spec.sink) {
             const {smtp} = spec.sink;
 
             const smtpServerNamespace = smtp.server.namespace || policy.metadata.namespace || "";
-            const smtpSecretNamespace = smtp.credentials.namespace || policy.metadata.namespace || "";
-
-            const [smtpServer, smtpSecret] = await Promise.all([
-                this.smtpServerStore.get(smtpServerNamespace, smtp.server.name),
-                this.secretStore.get(smtpSecretNamespace, smtp.credentials.name)
-            ]);
+            const smtpServer = await this.smtpServerStore.get(smtpServerNamespace, smtp.server.name);
 
             if (!smtpServer) {
                 return undefined;
             }
 
-            if (!smtpSecret) {
-                return undefined;
-            }
-
-            const {data: secretData = {}} = smtpSecret;
-
             const forwardPolicy: ForwardPolicy = {
-                type: "forward",
-                id: policy.metadata.namespace + "/" + policy.metadata.name,
+                id: objectMetaToString(policy),
                 sourceReference,
                 smtp: {
+                    name: objectMetaToString(smtpServer),
                     server: smtpServer.spec.server,
                     port: smtpServer.spec.port || 587,
-                    auth: {
-                        method: smtpServer.spec.authType || "PLAIN",
-                        username: new Buffer(secretData["username"], "base64").toString("utf-8"),
-                        password: new Buffer(secretData["password"], "base64").toString("utf-8"),
-                    },
                     tls: smtpServer.spec.tls === undefined ? true : smtpServer.spec.tls,
                 },
             };
+
+            if (smtp.credentials) {
+                const smtpSecretNamespace = smtp.credentials.namespace || policy.metadata.namespace || "";
+                const smtpSecret = await this.secretStore.get(smtpSecretNamespace, smtp.credentials.name);
+
+                if (!smtpSecret) {
+                    return undefined;
+                }
+
+                const {data: secretData = {}} = smtpSecret;
+
+                forwardPolicy.smtp.auth = {
+                    method: smtpServer.spec.authType || "PLAIN",
+                    username: new Buffer(secretData["username"], "base64").toString("utf-8"),
+                    password: new Buffer(secretData["password"], "base64").toString("utf-8"),
+                };
+            }
 
             if (spec.ratelimiting) {
                 forwardPolicy.ratelimit = {
@@ -132,5 +126,8 @@ export class KubernetesPolicyProvider implements PolicyProvider {
 
         return undefined;
     }
+}
 
+function objectMetaToString(o: MetadataObject): string {
+    return `${o.metadata.namespace}/${o.metadata.name}`;
 }

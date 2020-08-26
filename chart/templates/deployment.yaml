@@ -14,6 +14,12 @@ spec:
       labels:
         app: {{ template "chart.name" . }}
         release: {{ .Release.Name }}
+      {{- if .Values.prometheus.enabled }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: 9100
+        prometheus.io/path: "/metrics"
+      {{- end }}
     spec:
       {{- if .Values.rbac.enabled }}
       serviceAccountName: {{ template "chart.fullname" . }}
@@ -23,14 +29,6 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            {{- if .Values.rest.enabled }}
-            - containerPort: {{ .Values.rest.service.internalPort }}
-              name: http
-            {{- end }}
-            {{- if .Values.grpc.enabled }}
-            - containerPort: {{ .Values.grpc.service.internalPort }}
-              name: grpc
-            {{- end }}
             - containerPort: {{ .Values.smtp.service.internalPort }}
               name: smtp
             - containerPort: 9100
@@ -44,20 +42,6 @@ spec:
               path: /readiness
               port: 9100
           env:
-            - name: KUBEMAIL_MONGODB_URL
-              value: mongodb://{{ template "chart.mongodb.fullname" . }}:{{ .Values.mongodb.port }}/kubemail
-            - name: KUBEMAIL_REST_ENABLED
-              value: {{ .Values.rest.enabled | quote }}
-            {{- if .Values.rest.enabled }}
-            - name: KUBEMAIL_REST_PORT
-              value: {{ .Values.rest.service.internalPort | quote }}
-            {{- end }}
-            - name: KUBEMAIL_GRPC_ENABLED
-              value: {{ .Values.grpc.enabled | quote }}
-            {{- if .Values.grpc.enabled }}
-            - name: KUBEMAIL_GRPC_PORT
-              value: {{ .Values.grpc.service.internalPort | quote }}
-            {{- end }}
             - name: KUBEMAIL_KUBERNETES_INCLUSTER
               value: "true"
             - name: DEBUG

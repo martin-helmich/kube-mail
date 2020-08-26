@@ -1,33 +1,3 @@
-elasticsearch:
-  host: localhost:9200
-
-mongodb:
-  url: mongodb://localhost:27017/kubemail
-
-rest:
-  enabled: false
-  port: 8080
-
-grpc:
-  enabled: true
-  port: 8080
-
-sink:
-  #type: elasticsearch
-  #elasticsearch:
-  #  index: caught-messages
-  type: mongodb
-  mongodb:
-    collection: caughtMessages
-
-recorder:
-  #type: elasticsearch
-  #elasticsearch:
-  #  index: records
-  type: mongodb
-  mongodb:
-    collection: statistics
-
 policy:
   provider: kubernetes
   kubernetes:
