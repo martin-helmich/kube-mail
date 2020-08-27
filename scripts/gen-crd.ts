@@ -46,7 +46,7 @@ function purgeSchemaForKubernetes(s: Schema) {
 }
 
 const fileContents: Record<string, string> = {};
-const crdPath = path.join(__dirname, "..", "chart", "crds");
+const crdPath = path.join(__dirname, "..", "deploy", "helm-chart", "kube-mail", "crds");
 
 const generateFromSourceFile = async (sourceFile: string, kind: string, plural: string, columns: CustomResourceColumnDefinition[]) => {
     const targetFile = path.join(crdPath, `${kind.toLowerCase()}_crd.yaml`);

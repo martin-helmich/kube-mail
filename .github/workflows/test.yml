@@ -39,10 +39,10 @@ jobs:
           curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
       - name: Lint Helm chart
         run: |
-          helm lint ./chart
+          helm lint ./deploy/helm-chart/kube-mail
       - name: Render Helm chart
         run: |
-          helm template test ./chart > /dev/null
+          helm template test ./deploy/helm-chart/kube-mail > /dev/null
 
   generate:
     runs-on: ubuntu-latest
@@ -84,7 +84,7 @@ jobs:
           curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
       - name: Install kube-mail in KinD
         run: |
-          helm install --set image.repository=kube-mail --set image.pullPolicy=Never kube-mail ./chart
+          helm install --set image.repository=kube-mail --set image.pullPolicy=Never kube-mail ./deploy/helm-chart/kube-mail
       - name: Run tests
         run: |
           POD_NAME=$(kubectl get po -l app.kubernetes.io/name=kube-mail -o=jsonpath='{.items[0].metadata.name}')

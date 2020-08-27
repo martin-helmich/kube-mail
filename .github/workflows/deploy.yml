@@ -1,0 +1,17 @@
+name: Create release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  deploytagged:
+    name: Deploy Helm chart
+    runs-on: ubuntu-latest
+    if: github.repository == "mittwald/kube-mail"
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Bump Chart Version
+        run: bash ./scripts/bump-app-version.sh publish "${GITHUB_REF##*/}" "${{ secrets.RELEASE_USER_TOKEN }}"
