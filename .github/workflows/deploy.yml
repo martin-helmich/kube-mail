@@ -9,7 +9,7 @@ jobs:
   deploytagged:
     name: Deploy Helm chart
     runs-on: ubuntu-latest
-    if: github.repository == "mittwald/kube-mail"
+    if: github.repository == 'mittwald/kube-mail'
     steps:
       - uses: actions/checkout@v2
 
