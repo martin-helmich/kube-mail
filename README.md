@@ -17,9 +17,8 @@ kube-mail is a policy-based SMTP server designed for running in a Kubernetes clu
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
-- [Getting started](#getting-started)
-  - [Installation via Helm](#installation-via-helm)
-  - [Configuration](#configuration)
+- [Installation](#installation)
+- [Basic architecture](#basic-architecture)
 - [Custom Resources](#custom-resources)
   - [`SMTPServer` resources](#smtpserver-resources)
   - [`EmailPolicy` resources](#emailpolicy-resources)
@@ -27,23 +26,29 @@ kube-mail is a policy-based SMTP server designed for running in a Kubernetes clu
   - [Forward all emails from a Pod into a mail catcher](#forward-all-emails-from-a-pod-into-a-mail-catcher)
 - [Sending mails from within a Pod](#sending-mails-from-within-a-pod)
   - [PHP and ssmtp](#php-and-ssmtp)
+- [Pending features](#pending-features)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 
-## Getting started
+## Installation
 
-### Installation via Helm
+The helm chart of this controller can be found under [./deploy/helm-chart/kube-mail](./deploy/helm-chart/kube-mail).
 
+Alternatively, you can use the the [Mittwald Kubernetes Helm Charts](https://github.com/mittwald/helm-charts) repository:
+```shell script
+helm repo add mittwald https://helm.mittwald.de
+helm repo update
+helm install kube-mail mittwald/kube-mail --namespace kube-system
 ```
-$ git clone https://github.com/martin-helmich/kube-mail
-$ cd kube-mail
-$ helm upgrade -i kubemail ./chart
-```
 
-### Configuration
+## Basic architecture
 
-tbw.
+When installed, kube-mail acts as a SMTP server that Pods in your cluster can use to send outgoing mails. This server works without any of the typical SMTP authentication mechanisms; instead, the kube-mail SMTP server authenticates a Pod by its IP address and then tries to find a `EmailPolicy` resource that matches the source Pod (by label).
+
+If an `EmailPolicy` has been found for a Pod, kube-mail will forward the email that should be sent to the upstream SMTP server configured in the `EmailPolicy`. If no `EmailPolicy` matches, kube-mail will reject the email.
+
+Within your Pod, simply use `kube-mail.<namespace>.svc` as SMTP server without any authentication. kube-mail will do the rest.
 
 ## Custom Resources
 
@@ -64,6 +69,19 @@ spec:
   tls: true
   authType: PLAIN
 ```
+
+Concerning the individual properties:
+
+<dl>
+  <dt><code>.spec.server</code></dt>
+  <dd>The host name of your upstream SMTP server. This may be either an external service, or a cluster-internal service (for example, specified by its <code>.svc.cluster.local</code> address)</dd>
+  <dt><code>.spec.port</code></dt>
+  <dd>The port that the upstream SMTP server is listening on. If omitted, 587 is assumed as default.</dd>
+  <dt><code>.spec.tls</code></dt>
+  <dd>Defines if the upstream server uses TLS.</dd>
+  <dt><code>.spec.authType</code></dt>
+  <dd>The SMTP authentation type. Supported values are <code>PLAIN</code>, <code>LOGIN</code>, <code>CRAM-MD5</code> and <code>SCRAM-SHA-1</code>.</dd>
+</dl>
 
 ### `EmailPolicy` resources
 
@@ -118,14 +136,14 @@ Concerning the individual properties:
 
 Forwarding all outgoing emails into a mail catcher (like [MailHog](https://github.com/mailhog/MailHog)) is a common use case in development environments, where an application should not be allowed to actually send emails out into the world. To configure kube-mail to forward all emails into a mail catcher, proceed as follows.
 
-1. Make sure that kube-mail is up and running in a namespace of your choice (for this example, we'll assume that kube-mail is running in the `kubemail-system` namespace).
+1. Make sure that kube-mail is up and running in a namespace of your choice (for this example, we'll assume that kube-mail is running in the `kube-system` namespace).
 
 1. Install the mail catcher of your choice. MailHog, for example, has a [Helm chart](https://github.com/codecentric/helm-charts/tree/master/charts/mailhog) that makes it easy to install:
 
     ```
     $ helm repo add codecentric https://codecentric.github.io/helm-charts
     $ helm install \
-        --namespace kubemail-system \
+        --namespace kube-system \
         --name mailhog \
         codecentric/mailhog
     ```
@@ -137,29 +155,30 @@ Forwarding all outgoing emails into a mail catcher (like [MailHog](https://githu
     kind: SMTPServer
     metadata:
       name: mailhog
-      namespace: kubemail-system
+      namespace: kube-system
     spec:
       server: mailhog.kubemail-system.svc.cluster.local
       port: 1025
       tls: false
     ```
 
-1. Configure an `EmailPolicy` to catch emails from a Pod and forward them to the configured `SMTPServer`:
+1. Configure an `EmailPolicy` to catch emails from a Pod and forward them to the configured `SMTPServer`. The policy resource needs to be in the same namespace as the Pod that's sending mails.
 
     ```yaml
     apiVersion: kube-mail.helmich.me/v1alpha1
     kind: EmailPolicy
     metadata:
       name: pod-to-mailhog
+      namespace: default # needs to be same namespace as Pod
     spec:
       podSelector:
         matchLabels:
           app.kubernetes.io/name: my-name
       sink:
         smtp:
-          server:
+          server: # server may be in a different namespace than policy
             name: mailhog
-            namespace: kubemail-system
+            namespace: kube-system
     ```
 
 ## Sending mails from within a Pod
@@ -169,7 +188,7 @@ Forwarding all outgoing emails into a mail catcher (like [MailHog](https://githu
 Provide `ssmtp` in your Pod; use the following configuration (`/etc/ssmtp/ssmtp.conf`):
 
 ```
-mailhub=kubemail.default.svc.cluster.local
+mailhub=kube-mail.kube-system.svc.cluster.local
 hostname=foo
 FromLineOverride=yes
 ```
@@ -179,3 +198,8 @@ Then in the php.ini:
 ```
 sendmail_path = /usr/sbin/ssmtp -t
 ```
+
+## Pending features
+
+- [ ] Rate limiting
+- [ ] TLS for cluster-internal communication
