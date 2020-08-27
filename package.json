@@ -16,7 +16,7 @@
     "@types/nodemailer": "^6.4.0",
     "@types/smtp-server": "^3.5.4",
     "axios": "^0.20.0",
-    "jest": "^24.0.0",
+    "jest": "^24.9.0",
     "json-refs": "^3.0.15",
     "ts-jest": "^24.3.0",
     "ts-json-schema-generator": "^0.72.1",
