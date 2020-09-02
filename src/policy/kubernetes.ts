@@ -2,7 +2,7 @@ import {ForwardPolicy, Policy, PolicyProvider, SourceReference} from "./provider
 import {PolicyStore} from "../k8s/policy_store";
 import {PodStore} from "../k8s/pod_store";
 import {SMTPServer} from "../k8s/types/v1alpha1/smtpserver";
-import {Secret} from "@mittwald/kubernetes/types/core/v1";
+import {Pod, PodWithStatus, Secret} from "@mittwald/kubernetes/types/core/v1";
 import {Store} from "../k8s/store";
 import {ObjectMeta} from "@mittwald/kubernetes/types/meta/v1";
 import {MetadataObject} from "@mittwald/kubernetes/types/meta";
@@ -18,7 +18,7 @@ export class KubernetesPolicyProvider implements PolicyProvider {
                        private staticPolicy: string | null) {
     }
 
-    public async getByClientIP(clientIP: string): Promise<Policy | undefined> {
+    public async getByClientIP(clientIP: string): Promise<[Policy | undefined, PodWithStatus | undefined]> {
         debug("resolving policy for pod IP %s", clientIP);
 
         let pod = await this.podStore.getByPodIP(clientIP);
@@ -45,7 +45,7 @@ export class KubernetesPolicyProvider implements PolicyProvider {
                 }
             } else {
                 debug("pod not found");
-                return undefined;
+                return [undefined, undefined];
             }
         }
 
@@ -63,7 +63,7 @@ export class KubernetesPolicyProvider implements PolicyProvider {
 
         if (policies.length === 0) {
             debug("no policies defined");
-            return undefined;
+            return [undefined, pod];
         }
 
         const policy = policies[0];
@@ -83,14 +83,18 @@ export class KubernetesPolicyProvider implements PolicyProvider {
             const smtpServer = await this.smtpServerStore.get(smtpServerNamespace, smtp.server.name);
 
             if (!smtpServer) {
-                return undefined;
+                return [undefined, pod];
             }
 
             const forwardPolicy: ForwardPolicy = {
                 id: objectMetaToString(policy),
+                namespace: policy.metadata.namespace!,
+                name: policy.metadata.name,
                 sourceReference,
                 smtp: {
-                    name: objectMetaToString(smtpServer),
+                    id: objectMetaToString(smtpServer),
+                    namespace: smtpServer.metadata.namespace!,
+                    name: smtpServer.metadata.name,
                     server: smtpServer.spec.server,
                     port: smtpServer.spec.port || 587,
                     tls: smtpServer.spec.tls === undefined ? true : smtpServer.spec.tls,
@@ -102,7 +106,7 @@ export class KubernetesPolicyProvider implements PolicyProvider {
                 const smtpSecret = await this.secretStore.get(smtpSecretNamespace, smtp.credentials.name);
 
                 if (!smtpSecret) {
-                    return undefined;
+                    return [undefined, pod];
                 }
 
                 const {data: secretData = {}} = smtpSecret;
@@ -121,10 +125,10 @@ export class KubernetesPolicyProvider implements PolicyProvider {
                 }
             }
 
-            return forwardPolicy;
+            return [forwardPolicy, pod];
         }
 
-        return undefined;
+        return [undefined, pod];
     }
 }
 

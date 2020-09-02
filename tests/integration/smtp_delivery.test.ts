@@ -106,6 +106,6 @@ describe("SMTP delivery", () => {
     test("metrics are exported", async () => {
         const response = await axios.get("http://localhost:9100/metrics");
 
-        expect(response.data).toContain(`kubemail_received_emails{policy="default/default",server="default/default-smtp"}`);
+        expect(response.data).toMatch(/kubemail_received_emails{pod_namespace="default",pod_name=".*",policy_namespace="default",policy_name="default",server_namespace="default",server_name="default-smtp"}/)
     })
 });

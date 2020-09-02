@@ -1,3 +1,5 @@
+import {Pod, PodWithStatus} from "@mittwald/kubernetes/types/core/v1";
+
 export type SourceReference = {
     namespace: string;
     podName: string;
@@ -6,13 +8,17 @@ export type SourceReference = {
 
 export type ForwardPolicy = {
     id: string;
+    namespace: string;
+    name: string;
     sourceReference: SourceReference;
     ratelimit?: {
         maximum: number;
         limitPeriod: "hour" | "minute";
     };
     smtp: {
+        id: string;
         name: string;
+        namespace: string;
         server: string;
         port: number;
         tls?: boolean;
@@ -29,5 +35,5 @@ export type ForwardPolicy = {
 export type Policy = ForwardPolicy;
 
 export interface PolicyProvider {
-    getByClientIP(clientIP: string): Promise<Policy | undefined>;
+    getByClientIP(clientIP: string): Promise<[Policy | undefined, PodWithStatus | undefined]>;
 }

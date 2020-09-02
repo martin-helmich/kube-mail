@@ -25,9 +25,12 @@ export class SMTPBackend {
 
     public async onConnect(session: ExtendedSMTPServerSession, callback: (err?: Error | null) => void) {
         debug("connection attempt by %s", session.remoteAddress);
-        const policy = await this.policyProvider.getByClientIP(session.remoteAddress);
+        const [policy, pod] = await this.policyProvider.getByClientIP(session.remoteAddress);
 
         if (!policy) {
+            // noinspection JSIgnoredPromiseFromCall,ES6MissingAwait
+            this.recorder.observeRejectedNoPolicy(pod?.metadata.namespace, pod?.metadata.name);
+
             debug("rejection connection; no policy found");
             callback(new Error("access forbidden by policy"));
             return;
@@ -40,7 +43,7 @@ export class SMTPBackend {
     }
 
     public async onData(stream: Readable, session: ExtendedSMTPServerSession, callback: (err?: Error | null) => void) {
-        const {policy, remoteAddress, envelope} = session;
+        const {policy, envelope} = session;
         if (!policy) {
             callback(new Error("access forbidden by policy"));
             return;
@@ -57,12 +60,15 @@ export class SMTPBackend {
         try {
             const buf = await readStreamIntoBuffer(stream);
 
-            // noinspection JSIgnoredPromiseFromCall
-            this.recorder.observe(policy, mailFrom.address, rcptTo.map(r => r.address));
-
             await this.upstream.forward(policy, envelope, buf);
+
+            // noinspection JSIgnoredPromiseFromCall,ES6MissingAwait
+            this.recorder.observeSent(policy, mailFrom.address, rcptTo.map(r => r.address));
+
             callback();
         } catch (err) {
+            // noinspection JSIgnoredPromiseFromCall,ES6MissingAwait
+            this.recorder.observeError(policy, mailFrom.address);
             callback(err);
         }
     }
