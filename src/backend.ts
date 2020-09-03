@@ -4,6 +4,7 @@ import {Policy, PolicyProvider} from "./policy/provider";
 import {readStreamIntoBuffer} from "./util";
 import {SMTPUpstream} from "./upstream/smtp";
 import {StatisticsRecorder} from "./stats/recorder";
+import {RateLimiter} from "./ratelimit/ratelimiter";
 
 const debug = require("debug")("backend");
 
@@ -12,10 +13,21 @@ export interface ExtendedSMTPServerSession extends SMTPServerSession {
 }
 
 export class SMTPBackend {
+    private readonly policyProvider: PolicyProvider;
+    private readonly recorder: StatisticsRecorder;
+    private readonly rateLimiter: RateLimiter;
+    private readonly upstream: SMTPUpstream;
 
-    public constructor(private policyProvider: PolicyProvider,
-                       private recorder: StatisticsRecorder,
-                       private upstream: SMTPUpstream) {
+    public constructor(
+        policyProvider: PolicyProvider,
+        recorder: StatisticsRecorder,
+        rateLimiter: RateLimiter,
+        upstream: SMTPUpstream,
+    ) {
+        this.policyProvider = policyProvider;
+        this.recorder = recorder;
+        this.rateLimiter = rateLimiter;
+        this.upstream = upstream;
     }
 
     public handleAuthentication(auth: SMTPServerAuthentication, session: ExtendedSMTPServerSession, callback: (err: Error | null | undefined, response: SMTPServerAuthenticationResponse) => void): void {
@@ -59,6 +71,25 @@ export class SMTPBackend {
 
         try {
             const buf = await readStreamIntoBuffer(stream);
+
+            if (policy.ratelimit) {
+                debug("ratelimit is enabled for policy %o: %o", policy.id, policy.ratelimit);
+
+                const ok = await this.rateLimiter.take(policy, rcptTo.length);
+                if (!ok) {
+                    const desc = `${policy.ratelimit.maximum} emails per ${policy.ratelimit.limitPeriod}`;
+
+                    debug(`ratelimit (${desc}) is exceeded`);
+
+                    // noinspection JSIgnoredPromiseFromCall,ES6MissingAwait
+                    this.recorder.observeRejectedRatelimitExceeded(policy, mailFrom.address, rcptTo.map(r => r.address));
+
+                    callback(new Error(`rate limit (${desc}) exceeded`));
+                    return;
+                }
+
+                debug("ratelimit allows sending message");
+            }
 
             await this.upstream.forward(policy, envelope, buf);
 

@@ -11,3 +11,20 @@ spec:
       server:
         name: default-smtp
         namespace: default
+---
+apiVersion: kube-mail.helmich.me/v1alpha1
+kind: EmailPolicy
+metadata:
+  name: ratelimited
+spec:
+  podSelector:
+    matchLabels:
+      ratelimited: "true"
+  ratelimiting:
+    maximum: 1
+    period: "hour"
+  sink:
+    smtp:
+      server:
+        name: default-smtp
+        namespace: default

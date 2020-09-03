@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ template "chart.fullname" . }}-api
+  name: {{ template "chart.fullname" . }}-smtp
   labels:
     app.kubernetes.io/name: {{ template "chart.name" . }}
     helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}

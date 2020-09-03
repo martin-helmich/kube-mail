@@ -107,5 +107,18 @@ describe("SMTP delivery", () => {
         const response = await axios.get("http://localhost:9100/metrics");
 
         expect(response.data).toMatch(/kubemail_received_emails{pod_namespace="default",pod_name=".*",policy_namespace="default",policy_name="default",server_namespace="default",server_name="default-smtp"}/)
-    })
+    });
+
+    test("mails are rate-limited", async () => {
+        const firstPod = await sendMailFromPod("test@kube-mail.example", {"ratelimited": "true"});
+        await waitUntilPodCompletion(firstPod);
+
+        const secondPod = await sendMailFromPod("test@kube-mail.example", {"ratelimited": "true"});
+        await waitUntilPodFailure(secondPod);
+
+        await sleep(3);
+
+        await expect(mailWasSentFromRecipient(`root@${firstPod.metadata.name}`)).resolves.not.toBeFalsy();
+        await expect(mailWasSentFromRecipient(`root@${secondPod.metadata.name}`)).resolves.toBeFalsy();
+    });
 });

@@ -5,6 +5,16 @@ policy:
     config: /Users/mhelmich/.kube/config
     static: ~
 
+rateLimiter:
+  redis:
+    host: localhost
+    port: 6379
+    password: ~
+    sentinel: ~
+      # host: ~
+      # port: ~
+      # masterSet: ~
+
 watcher:
   emailPolicyInformer:
     #selector: {"foo":"bar","bar":"foo"}

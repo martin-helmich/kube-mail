@@ -2,15 +2,17 @@ import {SMTPServer} from "smtp-server";
 import {SMTPBackend} from "./backend";
 import {SMTPUpstream} from "./upstream/smtp";
 import {Registry} from "prom-client";
-import {IInformerConfig, PolicyConfig} from "./config";
+import {IInformerConfig, PolicyConfig, RateLimiterConfig} from "./config";
 import {buildKubernetesClientFromConfig} from "./k8s/factory";
 import {KubernetesPolicyProviderFactory} from "./policy/factory";
 import {MonitoringServer} from "./monitoring";
 import {PrometheusRecorder} from "./stats/recorder";
 import {debug as d} from "./debug";
+import {buildRatelimiterFromConfig} from "./ratelimit/factory";
 
 export async function main(
     policyConfig: PolicyConfig,
+    rateLimiterConfig: RateLimiterConfig,
     emailPolicyInformerConfig: IInformerConfig,
     podInformerConfig: IInformerConfig,
     register: Registry,
@@ -22,9 +24,11 @@ export async function main(
     const providerFactory = new KubernetesPolicyProviderFactory(api, emailPolicyInformerConfig, podInformerConfig, policyConfig.kubernetes.static || null);
     const [provider, providerInitialized, stopProvider] = providerFactory.build();
 
+    const rateLimiter = buildRatelimiterFromConfig(rateLimiterConfig);
+
     const recorder = new PrometheusRecorder(register);
     const upstream = new SMTPUpstream();
-    const backend = new SMTPBackend(provider, recorder, upstream);
+    const backend = new SMTPBackend(provider, recorder, rateLimiter, upstream);
 
     const smtpServer = new SMTPServer({
         authOptional: true,

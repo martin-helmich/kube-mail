@@ -6,6 +6,15 @@ policy:
       __format: json
     static: KUBEMAIL_KUBERNETES_POLICY
 
+rateLimiter:
+  redis:
+    host: KUBEMAIL_REDIS_HOST
+    port: KUBEMAIL_REDIS_PORT
+    password: KUBEMAIL_REDIS_PASSWORD
+    sentinel:
+      host: KUBEMAIL_REDIS_SENTINEL_HOST
+      port: KUBEMAIL_REDIS_SENTINEL_PORT
+      masterSet: KUBEMAIL_REDIS_SENTINEL_MASTERSET
 watcher:
   emailPolicyInformer:
     selector:

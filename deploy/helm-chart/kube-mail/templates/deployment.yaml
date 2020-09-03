@@ -18,6 +18,9 @@ spec:
       labels:
         app.kubernetes.io/name: {{ template "chart.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
+        {{- if .Values.redis.networkPolicy.enabled }}
+        {{ template "chart.fullname" . }}-redis-client: "true"
+        {{- end }}
       {{- if .Values.prometheus.enabled }}
       annotations:
         prometheus.io/scrape: "true"
@@ -48,6 +51,26 @@ spec:
           env:
             - name: KUBEMAIL_KUBERNETES_INCLUSTER
               value: "true"
+            {{- if .Values.redis.usePassword }}
+            - name: KUBEMAIL_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "chart.fullname" . }}-redis
+                  key: redis-password
+            {{- end }}
+            {{- if .Values.redis.sentinel.enabled }}
+            - name: KUBEMAIL_REDIS_SENTINEL_HOST
+              value: {{ template "chart.fullname" . }}-redis
+            - name: KUBEMAIL_REDIS_SENTINEL_PORT
+              value: {{ .Values.redis.sentinel.port | quote }}
+            - name: KUBEMAIL_REDIS_SENTINEL_MASTERSET
+              value: {{ .Values.redis.sentinel.masterSet | quote }}
+            {{- else }}
+            - name: KUBEMAIL_REDIS_HOST
+              value: redis://{{ template "chart.fullname" . }}-redis
+            - name: KUBEMAIL_REDIS_PORT
+              value: {{ .Values.redis.redisPort | quote }}
+            {{- end }}
             - name: DEBUG
               value: "*"
             {{- if .Values.watcher.emailPolicyInformer.selector }}

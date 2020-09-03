@@ -6,15 +6,17 @@ export type SourceReference = {
     labels?: { [k: string]: string };
 }
 
+export type RateLimitPolicy = {
+    maximum: number;
+    limitPeriod: "hour" | "minute";
+};
+
 export type ForwardPolicy = {
     id: string;
     namespace: string;
     name: string;
     sourceReference: SourceReference;
-    ratelimit?: {
-        maximum: number;
-        limitPeriod: "hour" | "minute";
-    };
+    ratelimit?: RateLimitPolicy;
     smtp: {
         id: string;
         name: string;

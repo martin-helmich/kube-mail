@@ -3,6 +3,7 @@ import {Counter, Registry} from "prom-client";
 
 export class PrometheusRecorder implements StatisticsRecorder {
     private messageCount: Counter<any>;
+    private rateLimitExceededCount: Counter<any>;
     private rejectedCount: Counter<any>;
     private rejectedNoPodCount: Counter<any>;
     private errorCount: Counter<any>;
@@ -11,6 +12,12 @@ export class PrometheusRecorder implements StatisticsRecorder {
         this.messageCount = new Counter({
             name: "kubemail_received_emails",
             help: "amount of received emails",
+            labelNames: ["pod_namespace", "pod_name", "policy_namespace", "policy_name", "server_namespace", "server_name"],
+            registers: [register],
+        });
+        this.rateLimitExceededCount = new Counter({
+            name: "kubemail_rejected_emails_ratelimit",
+            help: "amount of emails rejected due to a received rate limit",
             labelNames: ["pod_namespace", "pod_name", "policy_namespace", "policy_name", "server_namespace", "server_name"],
             registers: [register],
         });
@@ -45,6 +52,17 @@ export class PrometheusRecorder implements StatisticsRecorder {
         ).inc(recipients.length);
     }
 
+    public async observeRejectedRatelimitExceeded(policy: Policy, sender: string, recipients: string[]): Promise<void> {
+        this.rateLimitExceededCount.labels(
+            policy.sourceReference.namespace,
+            policy.sourceReference.podName,
+            policy.namespace,
+            policy.name,
+            policy.smtp.namespace,
+            policy.smtp.name,
+        ).inc(recipients.length);
+    }
+
     public async observeError(policy: Policy, sender: string): Promise<void> {
         this.errorCount.labels(
             policy.sourceReference.namespace,
@@ -68,6 +86,7 @@ export class PrometheusRecorder implements StatisticsRecorder {
 
 export interface StatisticsRecorder {
     observeSent(policy: Policy, sender: string, recipients: string[]): Promise<void>;
+    observeRejectedRatelimitExceeded(policy: Policy, sender: string, recipients: string[]): Promise<void>;
     observeRejectedNoPolicy(podNamespace: string | undefined, podName: string | undefined): Promise<void>;
     observeError(policy: Policy, sender: string): Promise<void>;
 }
