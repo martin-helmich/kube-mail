@@ -12,7 +12,7 @@
     "@types/jest": "^26.0.13",
     "@types/js-yaml": "^3.12.5",
     "@types/mailparser": "^2.7.3",
-    "@types/node": "12",
+    "@types/node": "13",
     "@types/nodemailer": "^6.4.0",
     "@types/smtp-server": "^3.5.4",
     "axios": "^0.20.0",
