@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/martin-helmich/kube-mail.svg?branch=master)](https://travis-ci.org/martin-helmich/kube-mail)
 [![Docker Repository on Quay](https://quay.io/repository/martinhelmich/kube-mail/status "Docker Repository on Quay")](https://quay.io/repository/martinhelmich/kube-mail)
+[![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=martin-helmich/kube-mail)](https://dependabot.com)
 
 <hr>
 
