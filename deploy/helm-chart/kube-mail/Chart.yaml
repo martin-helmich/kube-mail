@@ -4,5 +4,5 @@ name: kube-mail
 version: 0.6.0
 dependencies:
   - name: redis
-    version: 0.6.0
+    version: 11.2.1
     repository: https://charts.bitnami.com/bitnami
