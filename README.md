@@ -35,7 +35,7 @@ kube-mail is a policy-based SMTP server designed for running in a Kubernetes clu
 
 The helm chart of this controller can be found under [./deploy/helm-chart/kube-mail](./deploy/helm-chart/kube-mail).
 
-Alternatively, you can use the the [Mittwald Kubernetes Helm Charts](https://github.com/mittwald/helm-charts) repository:
+Alternatively, you can use the [Mittwald Kubernetes Helm Charts](https://github.com/mittwald/helm-charts) repository:
 ```shell script
 helm repo add mittwald https://helm.mittwald.de
 helm repo update
@@ -44,7 +44,7 @@ helm install kube-mail mittwald/kube-mail --namespace kube-system
 
 ## Basic architecture
 
-When installed, kube-mail acts as a SMTP server that Pods in your cluster can use to send outgoing mails. This server works without any of the typical SMTP authentication mechanisms; instead, the kube-mail SMTP server authenticates a Pod by its IP address and then tries to find a `EmailPolicy` resource that matches the source Pod (by label).
+When installed, kube-mail acts as an SMTP server that Pods in your cluster can use to send outgoing mails. This server works without any of the typical SMTP authentication mechanisms; instead, the kube-mail SMTP server authenticates a Pod by its IP address and then tries to find a `EmailPolicy` resource that matches the source Pod (by label).
 
 If an `EmailPolicy` has been found for a Pod, kube-mail will forward the email that should be sent to the upstream SMTP server configured in the `EmailPolicy`. If no `EmailPolicy` matches, kube-mail will reject the email.
 
