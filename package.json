@@ -34,7 +34,7 @@
   "dependencies": {
     "@mittwald/kubernetes": "^3.2.2",
     "config": "^3.3.2",
-    "debug": "^4.2.0",
+    "debug": "^4.3.1",
     "express": "^4.17.1",
     "ioredis": "^4.19.2",
     "js-yaml": "^3.14.0",
