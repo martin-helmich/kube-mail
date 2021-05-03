@@ -38,7 +38,7 @@
     "express": "^4.17.1",
     "ioredis": "^4.19.4",
     "js-yaml": "^3.14.1",
-    "mailparser": "^3.0.1",
+    "mailparser": "^3.2.0",
     "nodemailer": "^6.6.0",
     "prom-client": "^12.0.0",
     "smtp-server": "^3.8.0"
