@@ -29,10 +29,11 @@ jobs:
       - name: Push images
         run: docker push "$IMAGE_NAME:latest" && docker push "$IMAGE_NAME:${GITHUB_REF##*/}"
 
-      - name: Run chart version bump
-        uses: mittwald/bump-app-version-action@v0.2.1
+      - name: Bump chart version
+        uses: mittwald/bump-app-version-action@v1
         with:
           mode: 'publish'
           chartYaml: './deploy/helm-chart/kube-mail/Chart.yaml'
         env:
           GITHUB_TOKEN: "${{ secrets.RELEASE_USER_TOKEN }}"
+          HELM_REPO_PASSWORD: "${{ secrets.HELM_REPO_PASSWORD }}"
