@@ -2,3 +2,4 @@
 /node_modules
 /dist
 /kind-kubeconfig
+/go/.idea
