@@ -4,6 +4,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type RateLimitingPeriod string
+
+const (
+	RateLimitingPeriodHour   RateLimitingPeriod = "hour"
+	RateLimitingPeriodMinute RateLimitingPeriod = "minute"
+)
+
 type ObjectReference struct {
 	Name string `json:"name"`
 	// +optional
@@ -22,7 +29,7 @@ type EmailPolicyRateLimiting struct {
 
 	// +optional
 	// +kubebuilder:validation:Enum=hour;minute
-	Period string `json:"period,omitempty" ts_type:"policyPeriod"`
+	Period RateLimitingPeriod `json:"period,omitempty" ts_type:"policyPeriod"`
 }
 
 type EmailPolicySink struct {

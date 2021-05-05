@@ -2,6 +2,15 @@ package v1alpha1
 
 import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+type SMTPAuthType string
+
+const (
+	SMTPAuthTypePlain     SMTPAuthType = "PLAIN"
+	SMTPAuthTypeLogin     SMTPAuthType = "LOGIN"
+	SMTPAuthTypeCRAMMD5   SMTPAuthType = "CRAM-MD5"
+	SMTPAuthTypeSCRAMSHA1 SMTPAuthType = "SCRAM-SHA-1"
+)
+
 type SMTPServerSpec struct {
 	Server string `json:"server"`
 
@@ -13,7 +22,7 @@ type SMTPServerSpec struct {
 
 	// +optional
 	// +kubebuilder:validation:Enum=PLAIN;LOGIN;CRAM-MD5;SCRAM-SHA-1
-	AuthType string `json:"authType,omitempty" ts_type:"authType"`
+	AuthType SMTPAuthType `json:"authType,omitempty" ts_type:"authType"`
 }
 
 type SMTPServerStatus struct {
