@@ -2,10 +2,9 @@ import {ForwardPolicy, Policy, PolicyProvider, SourceReference} from "./provider
 import {PolicyStore} from "../k8s/policy_store";
 import {PodStore} from "../k8s/pod_store";
 import {SMTPServer} from "../k8s/types/v1alpha1/smtpserver";
-import {Pod, PodWithStatus, Secret} from "@mittwald/kubernetes/types/core/v1";
-import {Store} from "../k8s/store";
-import {ObjectMeta} from "@mittwald/kubernetes/types/meta/v1";
+import {PodWithStatus, Secret} from "@mittwald/kubernetes/types/core/v1";
 import {MetadataObject} from "@mittwald/kubernetes/types/meta";
+import {Store} from "@mittwald/kubernetes/cache";
 
 const debug = require("debug")("policy:k8s");
 
