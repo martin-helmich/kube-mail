@@ -50,7 +50,7 @@ export async function main(
         d("stopping servers");
         await stopProvider();
         await monitoringServer.close();
-        await new Promise(res => smtpServer.close(res));
+        await new Promise<void>(res => smtpServer.close(res));
 
         d("servers stopped");
     }
