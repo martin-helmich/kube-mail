@@ -1,0 +1,25 @@
+{{- if .Values.prometheus.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ template "chart.fullname" . }}-metrics
+  labels:
+    app.kubernetes.io/name: {{ template "chart.name" . }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ template "chart.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  policyTypes:
+  - Ingress
+  ingress:
+  - ports:
+    - protocol: TCP
+      port: {{ .Values.prometheus.metricsPort }}
+    {{- if .Values.prometheus.networkPolicyIngress }}
+    from: {{ .Values.prometheus.networkPolicyIngress | toYaml | nindent 6 }}
+    {{- end }}
+{{- end }}
