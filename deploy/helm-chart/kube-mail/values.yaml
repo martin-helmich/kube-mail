@@ -26,6 +26,7 @@ watcher:
       #bar: foo
 prometheus:
   enabled: true
+  metricsPort: 9100
   serviceMonitor:
     enabled: false
     additionalLabels: {}

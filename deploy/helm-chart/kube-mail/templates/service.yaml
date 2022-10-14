@@ -14,6 +14,10 @@ spec:
       targetPort: {{ .Values.smtp.service.internalPort }}
       protocol: TCP
       name: smtp
+    - port: {{ .Values.prometheus.metricsPort }}
+      targetPort: {{ .Values.prometheus.metricsPort }}
+      protocol: TCP
+      name: metrics
   selector:
     app.kubernetes.io/name: {{ template "chart.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
