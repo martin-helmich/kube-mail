@@ -30,6 +30,24 @@ prometheus:
   serviceMonitor:
     enabled: false
     additionalLabels: {}
+  alerting:
+    enabled: false
+    additionalLabels: {}
+    rules:
+      KubeMailForwardErrorsByPolicy: &commonWarningAlertSettings
+        enabled: true
+        labels:
+          severity: warning
+      KubeMailForwardErrorsByServer: *commonWarningAlertSettings
+      KubeMailRejectedNoPolicy: *commonWarningAlertSettings
+      KubeMailRejectedRatelimit: *commonWarningAlertSettings
+
+      KubeMailForwardErrors: &commonCriticalAlertSettings
+        enabled: true
+        labels:
+          severity: critical
+      KubeMailRejectedNoPod: *commonCriticalAlertSettings
+
   # networkPolicyIngress:
   #   - namespaceSelector:
   #       matchLabels:

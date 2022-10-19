@@ -4,10 +4,7 @@ kind: ServiceMonitor
 metadata:
   name: {{ template "chart.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ template "chart.name" . }}
-    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- include "chart.labels" . | nindent 4 }}
     {{- if .Values.prometheus.serviceMonitor.additionalLabels }}
     {{- .Values.prometheus.serviceMonitor.additionalLabels | toYaml | nindent 4}}
     {{- end }}
