@@ -21,10 +21,10 @@ spec:
         {{- if .Values.redis.networkPolicy.enabled }}
         {{ template "chart.fullname" . }}-redis-client: "true"
         {{- end }}
-      {{- if .Values.prometheus.enabled }}
+      {{- if and .Values.prometheus.enabled (not .Values.prometheus.serviceMonitor.enabled) }}
       annotations:
         prometheus.io/scrape: "true"
-        prometheus.io/port: 9100
+        prometheus.io/port: "9100"
         prometheus.io/path: "/metrics"
       {{- end }}
     spec:
@@ -38,16 +38,16 @@ spec:
           ports:
             - containerPort: {{ .Values.smtp.service.internalPort }}
               name: smtp
-            - containerPort: 9100
+            - containerPort: {{ .Values.prometheus.metricsPort }}
               name: metrics
           livenessProbe:
             httpGet:
               path: /status
-              port: 9100
+              port: {{ .Values.prometheus.metricsPort }}
           readinessProbe:
             httpGet:
               path: /readiness
-              port: 9100
+              port: {{ .Values.prometheus.metricsPort }}
           env:
             - name: KUBEMAIL_KUBERNETES_INCLUSTER
               value: "true"

@@ -17,7 +17,6 @@ rules:
   - watch
 - apiGroups: [""]
   resources: ["secrets"]
-  resourceNames: ["smtp-credentials"]
   verbs:
   - get
   - list

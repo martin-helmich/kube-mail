@@ -1,10 +1,9 @@
 import {KubernetesPolicyProvider} from "./kubernetes";
 import {PolicyStore} from "../k8s/policy_store";
-import {PodStore} from "../k8s/pod_store";
+import {PodPredicates, PodStore} from "../k8s/pod_store";
 import {IKubernetesAPI} from "@mittwald/kubernetes";
 import {KubemailCustomResourceAPI} from "../k8s/api";
-import {CachingLookupStore} from "../k8s/store";
-import {Controller, Informer} from "@mittwald/kubernetes/cache";
+import {CachingLookupStore, Controller, Informer} from "@mittwald/kubernetes/cache";
 import {IInformerConfig} from '../config';
 import {Pod, PodWithStatus} from "@mittwald/kubernetes/types/core/v1";
 import {EmailPolicy} from "../k8s/types/v1alpha1/emailpolicy";
@@ -87,7 +86,7 @@ export class KubernetesPolicyProviderFactory {
             podInformerLabelSelector = podInformerLabelSelectorConfig.selector;
         }
 
-        const podStore = new PodStore(new CachingLookupStore(coreAPIv1.pods()), coreAPIv1.pods());
+        const podStore = new PodStore(new CachingLookupStore(coreAPIv1.pods()), coreAPIv1.pods(), PodPredicates.OnlyRunning);
         return [new Informer(coreAPIv1.pods(), podInformerLabelSelector, podStore), podStore];
     }
 

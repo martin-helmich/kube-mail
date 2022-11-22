@@ -25,7 +25,33 @@ watcher:
       #foo: bar
       #bar: foo
 prometheus:
-  enable: true
+  enabled: true
+  metricsPort: 9100
+  serviceMonitor:
+    enabled: false
+    additionalLabels: {}
+  alerting:
+    enabled: false
+    additionalLabels: {}
+    rules:
+      KubeMailForwardErrorsByPolicy: &commonWarningAlertSettings
+        enabled: true
+        labels:
+          severity: warning
+      KubeMailForwardErrorsByServer: *commonWarningAlertSettings
+      KubeMailRejectedNoPolicy: *commonWarningAlertSettings
+      KubeMailRejectedRatelimit: *commonWarningAlertSettings
+
+      KubeMailForwardErrors: &commonCriticalAlertSettings
+        enabled: true
+        labels:
+          severity: critical
+      KubeMailRejectedNoPod: *commonCriticalAlertSettings
+
+  # networkPolicyIngress:
+  #   - namespaceSelector:
+  #       matchLabels:
+  #         kubernetes.io/metadata.name: monitoring
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little

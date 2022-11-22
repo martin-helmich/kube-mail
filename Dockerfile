@@ -1,4 +1,4 @@
-FROM node:12
+FROM node:18
 
 WORKDIR /app
 
@@ -11,14 +11,14 @@ COPY src /app/src
 
 RUN npm run compile
 
-FROM node:12
+FROM node:18
 
 WORKDIR /app
 COPY package*.json /app/
 
 RUN npm install -g npm@^6.1.0 && npm install --production
 
-FROM node:12-slim
+FROM node:18-slim
 
 WORKDIR /app
 
