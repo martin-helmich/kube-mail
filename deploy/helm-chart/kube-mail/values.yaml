@@ -36,6 +36,10 @@ prometheus:
   metricsPort: 9100
   serviceMonitor:
     enabled: false
+    interval: ""
+    scrapeTimeout: ""
+    metricRelabelings: []
+    relabelings: []
     additionalLabels: {}
   alerting:
     enabled: false
