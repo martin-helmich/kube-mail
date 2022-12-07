@@ -77,9 +77,13 @@ resources: {}
   #  cpu: 100m
   #  memory: 128Mi
 redis:
+  enabled: true
   sentinel:
     enabled: true
   usePassword: false
   networkPolicy:
     enabled: true
     allowExternal: false
+externalRedis:
+  # port:
+  # host:

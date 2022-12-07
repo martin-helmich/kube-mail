@@ -47,3 +47,17 @@ Selector labels
 app.kubernetes.io/name: {{ include "chart.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+
+{{/*
+Return the Redis hostname
+*/}}
+{{- define "chart.redis.host" -}}
+{{- ternary (printf "%s-redis" (include "chart.fullname" .)) .Values.externalRedis.host .Values.redis.enabled -}}
+{{- end -}}
+
+{{/*
+Return the Redis port
+*/}}
+{{- define "chart.redis.port" -}}
+{{- ternary .Values.redis.redisPort .Values.externalRedis.port .Values.redis.enabled -}}
+{{- end -}}

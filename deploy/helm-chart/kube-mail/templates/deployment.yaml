@@ -73,9 +73,9 @@ spec:
               value: {{ .Values.redis.sentinel.masterSet | quote }}
             {{- else }}
             - name: KUBEMAIL_REDIS_HOST
-              value: redis://{{ template "chart.fullname" . }}-redis
+              value: {{ include "chart.redis.host" . }}
             - name: KUBEMAIL_REDIS_PORT
-              value: {{ .Values.redis.redisPort | quote }}
+              value: {{ include "chart.redis.port" . | quote }}
             {{- end }}
             - name: DEBUG
               value: "*"
