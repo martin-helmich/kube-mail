@@ -31,10 +31,16 @@ spec:
       {{- if .Values.rbac.enabled }}
       serviceAccountName: {{ template "chart.fullname" . }}
       {{- end }}
+      {{- if .Values.podSecurityContext.enabled }}
+      securityContext: {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
           ports:
             - containerPort: {{ .Values.smtp.service.internalPort }}
               name: smtp
