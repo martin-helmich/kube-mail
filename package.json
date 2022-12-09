@@ -37,7 +37,7 @@
     "@mittwald/kubernetes": "^3.4.2",
     "config": "^3.3.2",
     "debug": "^4.3.4",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "ioredis": "^4.17.3",
     "js-yaml": "^4.1.0",
     "mailparser": "^3.0.0",
