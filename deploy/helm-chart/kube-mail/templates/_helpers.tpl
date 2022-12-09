@@ -29,10 +29,36 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 
 {{/*
+Create chart name and version as used by the chart label.
+*/}}
+{{- define "chart.chart" -}}
+{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Common annotations
+*/}}
+{{- define "chart.commonAnnotations" -}}
+{{- if .Values.commonAnnotations }}
+{{- toYaml .Values.commonAnnotations }}
+{{- end }}
+{{- end }}
+
+{{/*
 Common labels
 */}}
-{{- define "chart.labels" -}}
-helm.sh/chart: {{ include "chart.name" . }}
+{{- define "chart.commonLabels" -}}
+{{- if .Values.commonLabels }}
+{{- toYaml .Values.commonLabels }}
+{{- end }}
+{{ include "chart.metaLabels" . }}
+{{- end }}
+
+{{/*
+Meta labels
+*/}}
+{{- define "chart.metaLabels" -}}
+helm.sh/chart: {{ include "chart.chart" . }}
 {{ include "chart.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}

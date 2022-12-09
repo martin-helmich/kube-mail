@@ -2,25 +2,22 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "chart.fullname" . }}
-  labels:
-    app.kubernetes.io/name: {{ template "chart.name" . }}
-    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  {{- with (include "chart.commonLabels" .) }}
+  labels: {{ . | nindent 4 }}
+  {{- end }}
+  {{- with (include "chart.commonAnnotations" .) }}
+  annotations: {{ . | nindent 4 }}
+  {{- end }}
 spec:
   replicas: {{ .Values.replicaCount }}
   {{- with .Values.updateStrategy }}
   strategy: {{- toYaml . | nindent 4 }}
   {{- end }}
   selector:
-    matchLabels:
-      app.kubernetes.io/name: {{ template "chart.name" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
+    matchLabels: {{- include "chart.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      labels:
-        app.kubernetes.io/name: {{ template "chart.name" . }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
+      labels: {{- include "chart.selectorLabels" . | nindent 8 }}
         {{- if .Values.redis.networkPolicy.enabled }}
         {{ template "chart.fullname" . }}-redis-client: "true"
         {{- end }}
@@ -38,7 +35,7 @@ spec:
       securityContext: {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 8 }}
       {{- end }}
       containers:
-        - name: {{ .Chart.Name }}
+        - name: kube-mail
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           {{- if .Values.containerSecurityContext.enabled }}

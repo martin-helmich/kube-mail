@@ -3,11 +3,12 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: {{ template "chart.fullname" . }}-policies
-  labels:
-    app.kubernetes.io/name: {{ template "chart.name" . }}
-    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  {{- with (include "chart.commonLabels" .) }}
+  labels: {{ . | nindent 4 }}
+  {{- end }}
+  {{- with (include "chart.commonAnnotations" .) }}
+  annotations: {{ . | nindent 4 }}
+  {{- end }}
 rules:
 - apiGroups: ["kube-mail.helmich.me"]
   resources: ["emailpolicies", "smtpservers"]
@@ -26,11 +27,12 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: {{ template "chart.fullname" . }}-podwatcher
-  labels:
-    app.kubernetes.io/name: {{ template "chart.name" . }}
-    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  {{- with (include "chart.commonLabels" .) }}
+  labels: {{ . | nindent 4 }}
+  {{- end }}
+  {{- with (include "chart.commonAnnotations" .) }}
+  annotations: {{ . | nindent 4 }}
+  {{- end }}
 rules:
 - apiGroups: [""]
   resources: ["pods"]
@@ -45,23 +47,23 @@ kind: ServiceAccount
 apiVersion: v1
 metadata:
   name: {{ template "chart.fullname" . }}
-  labels:
-    app.kubernetes.io/name: {{ template "chart.name" . }}
-    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-
-
+  {{- with (include "chart.commonLabels" .) }}
+  labels: {{ . | nindent 4 }}
+  {{- end }}
+  {{- with (include "chart.commonAnnotations" .) }}
+  annotations: {{ . | nindent 4 }}
+  {{- end }}
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: {{ template "chart.fullname" . }}-podwatcher
-  labels:
-    app.kubernetes.io/name: {{ template "chart.name" . }}
-    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  {{- with (include "chart.commonLabels" .) }}
+  labels: {{ . | nindent 4 }}
+  {{- end }}
+  {{- with (include "chart.commonAnnotations" .) }}
+  annotations: {{ . | nindent 4 }}
+  {{- end }}
 subjects:
 - kind: ServiceAccount
   name: {{ template "chart.fullname" . }}
@@ -75,11 +77,12 @@ kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: {{ template "chart.fullname" . }}-policies
-  labels:
-    app.kubernetes.io/name: {{ template "chart.name" . }}
-    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  {{- with (include "chart.commonLabels" .) }}
+  labels: {{ . | nindent 4 }}
+  {{- end }}
+  {{- with (include "chart.commonAnnotations" .) }}
+  annotations: {{ . | nindent 4 }}
+  {{- end }}
 subjects:
 - kind: ServiceAccount
   name: {{ template "chart.fullname" . }}

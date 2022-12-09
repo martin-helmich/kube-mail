@@ -3,11 +3,26 @@ apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
   name: {{ template "chart.fullname" . }}
+  {{- $commonLabels := (include "chart.commonLabels" .) }}
+  {{- if or $commonLabels .Values.prometheus.alerting.additionalLabels }}
   labels:
-    {{- include "chart.labels" . | nindent 4 }}
-    {{- if .Values.prometheus.alerting.additionalLabels }}
-    {{- .Values.prometheus.alerting.additionalLabels | toYaml | nindent 4}}
+    {{- with .Values.prometheus.alerting.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
     {{- end }}
+    {{- with $commonLabels }}
+    {{- . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  {{- $commonAnnotations := (include "chart.commonAnnotations" .) }}
+  {{- if or $commonAnnotations .Values.prometheus.alerting.additionalAnnotations }}
+  annotations:
+    {{- with .Values.prometheus.alerting.additionalAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with $commonAnnotations }}
+    {{- . | nindent 4 }}
+    {{- end }}
+  {{- end }}
 spec:
   groups:
     - name: kube-mail.rules
