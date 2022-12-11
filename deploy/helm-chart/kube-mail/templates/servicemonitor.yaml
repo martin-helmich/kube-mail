@@ -3,16 +3,41 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: {{ template "chart.fullname" . }}
+  {{- $commonLabels := (include "chart.commonLabels" .) }}
+  {{- if or $commonLabels .Values.prometheus.serviceMonitor.additionalLabels }}
   labels:
-    {{- include "chart.labels" . | nindent 4 }}
-    {{- if .Values.prometheus.serviceMonitor.additionalLabels }}
-    {{- .Values.prometheus.serviceMonitor.additionalLabels | toYaml | nindent 4}}
+    {{- with .Values.prometheus.serviceMonitor.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
     {{- end }}
+    {{- with $commonLabels }}
+    {{- . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  {{- $commonAnnotations := (include "chart.commonAnnotations" .) }}
+  {{- if or $commonAnnotations .Values.prometheus.serviceMonitor.additionalAnnotations }}
+  annotations:
+    {{- with .Values.prometheus.serviceMonitor.additionalAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with $commonAnnotations }}
+    {{- . | nindent 4 }}
+    {{- end }}
+  {{- end }}
 spec:
   selector:
-    matchLabels:
-      app.kubernetes.io/name: {{ template "chart.name" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
+    matchLabels: {{- include "chart.selectorLabels" . | nindent 6 }}
   endpoints:
     - port: metrics
+      {{- if .Values.prometheus.serviceMonitor.interval }}
+      interval: {{ .Values.prometheus.serviceMonitor.interval }}
+      {{- end }}
+      {{- if .Values.prometheus.serviceMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ .Values.prometheus.serviceMonitor.scrapeTimeout }}
+      {{- end }}
+      {{- if .Values.prometheus.serviceMonitor.metricRelabelings }}
+      metricRelabelings: {{ toYaml .Values.prometheus.serviceMonitor.metricRelabelings | nindent 8 }}
+      {{- end }}
+      {{- if .Values.prometheus.serviceMonitor.relabelings }}
+      relabelings: {{ toYaml .Values.prometheus.serviceMonitor.relabelings | nindent 8 }}
+      {{- end }}
 {{- end }}

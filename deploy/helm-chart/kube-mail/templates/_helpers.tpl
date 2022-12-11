@@ -29,10 +29,36 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 
 {{/*
+Create chart name and version as used by the chart label.
+*/}}
+{{- define "chart.chart" -}}
+{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Common annotations
+*/}}
+{{- define "chart.commonAnnotations" -}}
+{{- if .Values.commonAnnotations }}
+{{- toYaml .Values.commonAnnotations }}
+{{- end }}
+{{- end }}
+
+{{/*
 Common labels
 */}}
-{{- define "chart.labels" -}}
-helm.sh/chart: {{ include "chart.name" . }}
+{{- define "chart.commonLabels" -}}
+{{- if .Values.commonLabels }}
+{{- toYaml .Values.commonLabels }}
+{{- end }}
+{{ include "chart.metaLabels" . }}
+{{- end }}
+
+{{/*
+Meta labels
+*/}}
+{{- define "chart.metaLabels" -}}
+helm.sh/chart: {{ include "chart.chart" . }}
 {{ include "chart.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
@@ -47,3 +73,17 @@ Selector labels
 app.kubernetes.io/name: {{ include "chart.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+
+{{/*
+Return the Redis hostname
+*/}}
+{{- define "chart.redis.host" -}}
+{{- ternary (printf "%s-redis" (include "chart.fullname" .)) .Values.externalRedis.host .Values.redis.enabled -}}
+{{- end -}}
+
+{{/*
+Return the Redis port
+*/}}
+{{- define "chart.redis.port" -}}
+{{- ternary .Values.redis.redisPort .Values.externalRedis.port .Values.redis.enabled -}}
+{{- end -}}

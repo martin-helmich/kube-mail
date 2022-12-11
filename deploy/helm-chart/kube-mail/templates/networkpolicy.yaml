@@ -2,16 +2,15 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: {{ template "chart.fullname" . }}-smtp
-  labels:
-    app.kubernetes.io/name: {{ template "chart.name" . }}
-    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  {{- with (include "chart.commonLabels" .) }}
+  labels: {{ . | nindent 4 }}
+  {{- end }}
+  {{- with (include "chart.commonAnnotations" .) }}
+  annotations: {{ . | nindent 4 }}
+  {{- end }}
 spec:
   podSelector:
-    matchLabels:
-      app.kubernetes.io/name: {{ template "chart.name" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
+    matchLabels: {{- include "chart.selectorLabels" . | nindent 6 }}
   policyTypes:
   - Ingress
   ingress:
