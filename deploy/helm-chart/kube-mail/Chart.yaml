@@ -1,8 +1,9 @@
 apiVersion: v2
 description: A Helm chart for KubeMail
 name: kube-mail
-version: 0.6.0
+version: 0.8.0
 dependencies:
   - name: redis
     version: 11.2.1
     repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled

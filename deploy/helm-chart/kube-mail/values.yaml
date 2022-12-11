@@ -2,12 +2,20 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 replicaCount: 1
+updateStrategy: {}
 image:
   repository: quay.io/mittwald/kube-mail
   tag: latest
   pullPolicy: Always
 rbac:
   enabled: true
+podSecurityContext:
+  enabled: false
+  fsGroup: 1001
+containerSecurityContext:
+  enabled: false
+  runAsUser: 1001
+  runAsNonRoot: true
 smtp:
   service:
     externalPort: 25
@@ -25,7 +33,43 @@ watcher:
       #foo: bar
       #bar: foo
 prometheus:
-  enable: true
+  enabled: true
+  metricsPort: 9100
+  serviceMonitor:
+    enabled: false
+    interval: ""
+    scrapeTimeout: ""
+    metricRelabelings: []
+    relabelings: []
+    additionalLabels: {}
+    additionalAnnotations: {}
+  alerting:
+    enabled: false
+    additionalLabels: {}
+    additionalAnnotations: {}
+    rules:
+      KubeMailForwardErrorsByPolicy: &commonWarningAlertSettings
+        enabled: true
+        labels:
+          severity: warning
+      KubeMailForwardErrorsByServer: *commonWarningAlertSettings
+      KubeMailRejectedNoPolicy: *commonWarningAlertSettings
+      KubeMailRejectedRatelimit: *commonWarningAlertSettings
+
+      KubeMailForwardErrors: &commonCriticalAlertSettings
+        enabled: true
+        labels:
+          severity: critical
+      KubeMailRejectedNoPod: *commonCriticalAlertSettings
+
+  # networkPolicyIngress:
+  #   - namespaceSelector:
+  #       matchLabels:
+  #         kubernetes.io/metadata.name: monitoring
+extraVolumeMounts: []
+extraVolumes: []
+commonLabels: {}
+commonAnnotations: {}
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
@@ -37,10 +81,18 @@ resources: {}
   # requests:
   #  cpu: 100m
   #  memory: 128Mi
+nodeSelector: {}
+tolerations: []
+affinity: {}
+topologySpreadConstraints: []
 redis:
+  enabled: true
   sentinel:
     enabled: true
   usePassword: false
   networkPolicy:
     enabled: true
     allowExternal: false
+externalRedis:
+  # port:
+  # host:

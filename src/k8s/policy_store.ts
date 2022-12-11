@@ -1,16 +1,17 @@
 import {EmailPolicy} from "./types/v1alpha1/emailpolicy";
 import {MetadataObject} from "@mittwald/kubernetes/types/meta";
-import {Store} from "./store";
+import {Store} from "@mittwald/kubernetes/cache";
+
 const debug = require("debug")("kubemail:policystore");
 
-type Label = {key: string, value: string, combined: string};
+type Label = { key: string, value: string, combined: string };
 
 const name = (p: EmailPolicy) => `${p.metadata.namespace}/${p.metadata.name}`;
-const orderedLabels = (input: {[key: string]: string}): Label[] =>
+const orderedLabels = (input: { [key: string]: string }): Label[] =>
     Object.keys(input).sort().map(key => ({key, value: input[key], combined: key + "=" + input[key]}));
 
 class SearchTreeNode<E extends MetadataObject> {
-    public subNodes: {[labelAndValue: string]: SearchTreeNode<E>} = {};
+    public subNodes: { [labelAndValue: string]: SearchTreeNode<E> } = {};
 
     public constructor(public values: E[] = []) {
     }
@@ -39,7 +40,7 @@ class SearchTreeNode<E extends MetadataObject> {
         return subMatches.reduce((prev, cur) => [...prev, ...cur], []);
     }
 
-    public insertWithSelector(selector: {[k: string]: string}|Label[], obj: E) {
+    public insertWithSelector(selector: { [k: string]: string } | Label[], obj: E) {
         if (!Array.isArray(selector)) {
             selector = orderedLabels(selector);
         }
@@ -60,12 +61,12 @@ class SearchTreeNode<E extends MetadataObject> {
     }
 }
 
-export class PolicyStore implements Store<EmailPolicy> {
-    private policies = new Map<string, EmailPolicy>();
-    private defaults: EmailPolicy[] = [];
-    private searchTrees: {[ns: string]: SearchTreeNode<EmailPolicy>} = {};
+class PolicyStoreCacheContainer {
+    public policies = new Map<string, EmailPolicy>();
+    public defaults: EmailPolicy[] = [];
+    public searchTrees: { [ns: string]: SearchTreeNode<EmailPolicy> } = {};
 
-    public match(namespace: string, labels: {[k: string]: string}): EmailPolicy[] {
+    public match(namespace: string, labels: { [k: string]: string }): EmailPolicy[] {
         if (!(namespace in this.searchTrees)) {
             return this.defaults;
         }
@@ -100,7 +101,7 @@ export class PolicyStore implements Store<EmailPolicy> {
         debug("updated policy store: %O", this);
     }
 
-    public async get(namespace: string, name: string): Promise<EmailPolicy | undefined> {
+    public get(namespace: string, name: string): EmailPolicy | undefined {
         return this.policies.get(namespace + "/" + name);
     }
 
@@ -114,5 +115,35 @@ export class PolicyStore implements Store<EmailPolicy> {
         }
 
         this.defaults = this.defaults.filter(e => !(e.metadata.namespace === obj.metadata.namespace && e.metadata.name === obj.metadata.name));
+    }
+}
+
+export class PolicyStore implements Store<EmailPolicy> {
+    private cache = new PolicyStoreCacheContainer();
+
+    public match(namespace: string, labels: { [k: string]: string }): EmailPolicy[] {
+        return this.cache.match(namespace, labels);
+    }
+
+    public async store(obj: EmailPolicy): Promise<void> {
+        return this.cache.store(obj);
+    }
+
+    public async sync(objs: EmailPolicy[]): Promise<void> {
+        const newCache = new PolicyStoreCacheContainer();
+
+        for (const obj of objs) {
+            newCache.store(obj);
+        }
+
+        this.cache = newCache;
+    }
+
+    public async get(namespace: string, name: string): Promise<EmailPolicy | undefined> {
+        return this.cache.get(namespace, name);
+    }
+
+    public async pull(obj: EmailPolicy): Promise<void> {
+        this.cache.pull(obj);
     }
 }

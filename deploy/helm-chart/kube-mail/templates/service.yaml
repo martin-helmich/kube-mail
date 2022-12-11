@@ -2,11 +2,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Values.service.name }}
-  labels:
-    app.kubernetes.io/name: {{ template "chart.name" . }}
-    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  {{- with (include "chart.commonLabels" .) }}
+  labels: {{ . | nindent 4 }}
+  {{- end }}
+  {{- with (include "chart.commonAnnotations" .) }}
+  annotations: {{ . | nindent 4 }}
+  {{- end }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -14,6 +15,8 @@ spec:
       targetPort: {{ .Values.smtp.service.internalPort }}
       protocol: TCP
       name: smtp
-  selector:
-    app.kubernetes.io/name: {{ template "chart.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    - port: {{ .Values.prometheus.metricsPort }}
+      targetPort: {{ .Values.prometheus.metricsPort }}
+      protocol: TCP
+      name: metrics
+  selector: {{- include "chart.selectorLabels" . | nindent 4 }}

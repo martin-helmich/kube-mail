@@ -2,52 +2,58 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "chart.fullname" . }}
-  labels:
-    app.kubernetes.io/name: {{ template "chart.name" . }}
-    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  {{- with (include "chart.commonLabels" .) }}
+  labels: {{ . | nindent 4 }}
+  {{- end }}
+  {{- with (include "chart.commonAnnotations" .) }}
+  annotations: {{ . | nindent 4 }}
+  {{- end }}
 spec:
   replicas: {{ .Values.replicaCount }}
+  {{- with .Values.updateStrategy }}
+  strategy: {{- toYaml . | nindent 4 }}
+  {{- end }}
   selector:
-    matchLabels:
-      app.kubernetes.io/name: {{ template "chart.name" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
+    matchLabels: {{- include "chart.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      labels:
-        app.kubernetes.io/name: {{ template "chart.name" . }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
+      labels: {{- include "chart.selectorLabels" . | nindent 8 }}
         {{- if .Values.redis.networkPolicy.enabled }}
         {{ template "chart.fullname" . }}-redis-client: "true"
         {{- end }}
-      {{- if .Values.prometheus.enabled }}
+      {{- if and .Values.prometheus.enabled (not .Values.prometheus.serviceMonitor.enabled) }}
       annotations:
         prometheus.io/scrape: "true"
-        prometheus.io/port: 9100
+        prometheus.io/port: "9100"
         prometheus.io/path: "/metrics"
       {{- end }}
     spec:
       {{- if .Values.rbac.enabled }}
       serviceAccountName: {{ template "chart.fullname" . }}
       {{- end }}
+      {{- if .Values.podSecurityContext.enabled }}
+      securityContext: {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
       containers:
-        - name: {{ .Chart.Name }}
+        - name: kube-mail
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.containerSecurityContext.enabled }}
+          securityContext: {{- omit .Values.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
           ports:
             - containerPort: {{ .Values.smtp.service.internalPort }}
               name: smtp
-            - containerPort: 9100
+            - containerPort: {{ .Values.prometheus.metricsPort }}
               name: metrics
           livenessProbe:
             httpGet:
               path: /status
-              port: 9100
+              port: {{ .Values.prometheus.metricsPort }}
           readinessProbe:
             httpGet:
               path: /readiness
-              port: 9100
+              port: {{ .Values.prometheus.metricsPort }}
           env:
             - name: KUBEMAIL_KUBERNETES_INCLUSTER
               value: "true"
@@ -67,9 +73,9 @@ spec:
               value: {{ .Values.redis.sentinel.masterSet | quote }}
             {{- else }}
             - name: KUBEMAIL_REDIS_HOST
-              value: redis://{{ template "chart.fullname" . }}-redis
+              value: {{ include "chart.redis.host" . }}
             - name: KUBEMAIL_REDIS_PORT
-              value: {{ .Values.redis.redisPort | quote }}
+              value: {{ include "chart.redis.port" . | quote }}
             {{- end }}
             - name: DEBUG
               value: "*"
@@ -85,7 +91,22 @@ spec:
             {{- end }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
+          {{- if .Values.extraVolumeMounts }}
+          volumeMounts: {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
+          {{- end }}
+      {{- with .Values.affinity }}
+      affinity: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints: {{ toYaml . | nindent 8}}
+      {{- end }}
     {{- if .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml .Values.nodeSelector | indent 8 }}
     {{- end }}
+      {{- if .Values.extraVolumes }}
+      volumes: {{ toYaml .Values.extraVolumes | nindent 8 }}
+      {{- end }}

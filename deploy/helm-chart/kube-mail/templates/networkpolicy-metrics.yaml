@@ -1,7 +1,8 @@
+{{- if .Values.prometheus.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ template "chart.fullname" . }}-smtp
+  name: {{ template "chart.fullname" . }}-metrics
   {{- with (include "chart.commonLabels" .) }}
   labels: {{ . | nindent 4 }}
   {{- end }}
@@ -14,10 +15,10 @@ spec:
   policyTypes:
   - Ingress
   ingress:
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          "kube-mail.helmich.me/smtp-access": "true"
-    ports:
+  - ports:
     - protocol: TCP
-      port: {{ .Values.smtp.service.internalPort }}
+      port: {{ .Values.prometheus.metricsPort }}
+    {{- if .Values.prometheus.networkPolicyIngress }}
+    from: {{ .Values.prometheus.networkPolicyIngress | toYaml | nindent 6 }}
+    {{- end }}
+{{- end }}
