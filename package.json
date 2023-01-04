@@ -12,7 +12,7 @@
     "devDependencies": {
         "@types/config": "^0.0.37",
         "@types/ioredis": "^4.22.0",
-        "@types/express": "^4.17.9",
+        "@types/express": "^4.17.15",
         "@types/jest": "^26.0.23",
         "@types/js-yaml": "^4.0.5",
         "@types/mailparser": "^3.0.2",
