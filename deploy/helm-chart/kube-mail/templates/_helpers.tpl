@@ -78,7 +78,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Return the Redis hostname
 */}}
 {{- define "chart.redis.host" -}}
-{{- ternary (printf "%s-redis" (include "chart.fullname" .)) .Values.externalRedis.host .Values.redis.enabled -}}
+{{- ternary (printf "%s-redis" .Release.Name ) .Values.externalRedis.host .Values.redis.enabled -}}
 {{- end -}}
 
 {{/*

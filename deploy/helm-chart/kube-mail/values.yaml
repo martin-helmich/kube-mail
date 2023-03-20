@@ -94,5 +94,5 @@ redis:
     enabled: true
     allowExternal: false
 externalRedis:
-  # port:
-  # host:
+  port:
+  host:
