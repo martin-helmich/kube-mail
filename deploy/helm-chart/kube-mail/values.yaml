@@ -87,9 +87,14 @@ affinity: {}
 topologySpreadConstraints: []
 redis:
   enabled: true
+  architecture: replication
+  replica:
+    replicaCount: 1
   sentinel:
     enabled: true
-  usePassword: false
+  auth:
+    enabled: false
+    sentinel: false
   networkPolicy:
     enabled: true
     allowExternal: false
