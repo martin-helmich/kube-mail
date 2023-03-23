@@ -31,6 +31,11 @@ kube-mail is a policy-based SMTP server designed for running in a Kubernetes clu
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+## License
+
+This project is licensed under the Apache-2.0 license.
+
+Copyright 2023 Martin Helmich, Mittwald CM Service GmbH & Co. KG and [other contributors](https://github.com/martin-helmich/kube-mail/graphs/contributors).
 
 ## Installation
 
