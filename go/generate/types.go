@@ -34,7 +34,7 @@ func main() {
 	t.CreateInterface = true
 	t.BackupDir = ""
 
-	t.AddImport(`import {authType} from "./enums"`)
+	t.AddImport(`import {authType, connect} from "./enums"`)
 
 	t.Add(v1alpha1.SMTPServerSpec{})
 
