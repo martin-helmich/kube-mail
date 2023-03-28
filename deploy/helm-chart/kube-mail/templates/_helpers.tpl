@@ -85,5 +85,5 @@ Return the Redis hostname
 Return the Redis port
 */}}
 {{- define "chart.redis.port" -}}
-{{- ternary .Values.redis.redisPort .Values.externalRedis.port .Values.redis.enabled -}}
+{{- ternary .Values.redis.master.service.ports.redis .Values.externalRedis.port .Values.redis.enabled -}}
 {{- end -}}

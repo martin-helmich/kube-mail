@@ -4,6 +4,6 @@ name: kube-mail
 version: 0.8.0
 dependencies:
   - name: redis
-    version: 11.2.1
+    version: 17.9.2
     repository: https://charts.bitnami.com/bitnami
     condition: redis.enabled
