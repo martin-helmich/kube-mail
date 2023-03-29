@@ -84,6 +84,15 @@ export class KubernetesPolicyProvider implements PolicyProvider {
             if (!smtpServer) {
                 return [undefined, pod];
             }
+           
+            let connect: "plain" | "ssl" | "starttls";
+            // Convert deprecated tls field to connect
+            if (smtpServer.spec.connect === undefined) {
+              let tls = smtpServer.spec.tls === undefined ? true : smtpServer.spec.tls;
+              connect = tls ? "ssl" : "plain";
+            } else {
+              connect = smtpServer.spec.connect;
+            }
 
             const forwardPolicy: ForwardPolicy = {
                 id: objectMetaToString(policy),
@@ -96,7 +105,7 @@ export class KubernetesPolicyProvider implements PolicyProvider {
                     name: smtpServer.metadata.name,
                     server: smtpServer.spec.server,
                     port: smtpServer.spec.port || 587,
-                    tls: smtpServer.spec.tls === undefined ? true : smtpServer.spec.tls,
+                    connect: connect,
                 },
             };
 

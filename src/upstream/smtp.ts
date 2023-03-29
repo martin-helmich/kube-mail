@@ -55,7 +55,7 @@ export class SMTPUpstream {
     }
 
     private connectionForPolicy(policy: ForwardPolicy): Promise<PromisifiedSMTPConnection> {
-        const {server, port, tls, auth} = policy.smtp;
+        const {server, port, connect, auth} = policy.smtp;
         const enableDebug = policy.smtp.debug === undefined ? false : policy.smtp.debug;
         const enableLogger = policy.smtp.logger === undefined ? false : policy.smtp.logger;
         const {name, connectionTimeout, socketTimeout} = this.options;
@@ -65,8 +65,9 @@ export class SMTPUpstream {
         const conn = new SMTPConnection({
             host: server,
             port: port,
-            secure: tls,
-            ignoreTLS: !tls,
+            secure: connect === "ssl",
+            ignoreTLS: connect === "plain",
+            requireTLS: connect === "starttls",
             name,
             connectionTimeout,
             socketTimeout,

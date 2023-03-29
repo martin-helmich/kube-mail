@@ -23,7 +23,7 @@ export type ForwardPolicy = {
         namespace: string;
         server: string;
         port: number;
-        tls?: boolean;
+        connect?: "plain" | "ssl" | "starttls";
         auth?: {
             method: "PLAIN" | "LOGIN" | "CRAM-MD5" | "SCRAM-SHA-1";
             username: string;
