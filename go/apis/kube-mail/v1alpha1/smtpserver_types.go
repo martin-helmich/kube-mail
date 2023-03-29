@@ -25,9 +25,9 @@ type SMTPServerSpec struct {
 	// +optional
 	Port int `json:"port,omitempty"`
 
-  // DEPRECATED: Use Connect, instead
-  // +kubebuilder:deprecatedversion:warning="TLS is deprecated use Connect instead."
-  // +optional
+	// DEPRECATED: Use Connect, instead
+	// +kubebuilder:deprecatedversion:warning="TLS is deprecated use Connect instead."
+	// +optional
 	TLS bool `json:"tls,omitempty"`
 	
 	// +kubebuilder:validation:Enum=plain;ssl;starttls
