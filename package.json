@@ -5,7 +5,7 @@
     "main": "dist/server.js",
     "repository": "https://github.com/martin-helmich/kube-mail",
     "author": "Martin Helmich",
-    "license": "GPL-3.0",
+    "license": "Apache-2.0",
     "engines": {
         "node": "^18"
     },
