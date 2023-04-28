@@ -1,6 +1,6 @@
 import {RateLimiterConfig} from "../config";
 import {RateLimiter} from "./ratelimiter";
-import * as IORedis from "ioredis";
+import Redis, {RedisOptions} from "ioredis";
 import {RedisRateLimiter} from "./ratelimiter_redis";
 
 function forceNumber(i: number | string): number {
@@ -12,9 +12,24 @@ function forceNumber(i: number | string): number {
 }
 
 export function buildRatelimiterFromConfig(c: RateLimiterConfig): RateLimiter {
+    const commonOptions: RedisOptions = {
+        reconnectOnError: (error) => {
+            const targetErrors = ["READONLY", "ETIMEDOUT"];
+
+            for (const targetError of targetErrors) {
+                if (error.message.includes(targetError)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
     if (c.redis.sentinel?.host) {
         const {sentinel} = c.redis;
-        const client = new IORedis({
+        const client = new Redis({
+            ...commonOptions,
             sentinelPassword: c.redis.password,
             sentinels: [{host: sentinel.host, port: forceNumber(sentinel.port)}],
             name: sentinel.masterSet,
@@ -23,7 +38,8 @@ export function buildRatelimiterFromConfig(c: RateLimiterConfig): RateLimiter {
         return new RedisRateLimiter(client);
     }
 
-    const client = new IORedis({
+    const client = new Redis({
+        ...commonOptions,
         host: c.redis.host,
         port: forceNumber(c.redis.port),
         password: c.redis.password,
