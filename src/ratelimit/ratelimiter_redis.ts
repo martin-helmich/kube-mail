@@ -1,6 +1,6 @@
 import {RateLimiter} from "./ratelimiter";
-import {Commands} from "ioredis";
 import {Policy, RateLimitPolicy} from "../policy/provider";
+import Redis from "ioredis";
 
 const keyForPolicy = (p: Policy) => `rl_${p.id}`;
 
@@ -16,9 +16,9 @@ const ttlForRL = (r: RateLimitPolicy) => {
 }
 
 export class RedisRateLimiter implements RateLimiter {
-    private readonly client: Commands;
+    private readonly client: Redis;
 
-    public constructor(redis: Commands) {
+    public constructor(redis: Redis) {
         this.client = redis;
     }
 
