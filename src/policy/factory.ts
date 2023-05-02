@@ -1,7 +1,7 @@
 import {KubernetesPolicyProvider} from "./kubernetes";
 import {PolicyStore} from "../k8s/policy_store";
 import {PodPredicates, PodStore} from "../k8s/pod_store";
-import {IKubernetesAPI} from "@mittwald/kubernetes";
+import {IKubernetesAPI, SelectorOptions} from "@mittwald/kubernetes";
 import {KubemailCustomResourceAPI} from "../k8s/api";
 import {CachingLookupStore, Controller, Informer} from "@mittwald/kubernetes/cache";
 import {IInformerConfig} from '../config';
@@ -67,27 +67,27 @@ export class KubernetesPolicyProviderFactory {
         const kubemailAPIv1a1 = this.api.kubemail().v1alpha1();
         const emailPolicyInformerLabelSelectorConfig = this.emailPolicyInformerConfig;
 
-        let emailPolicyInformerLabelSelector = {};
-        if (emailPolicyInformerLabelSelectorConfig && emailPolicyInformerLabelSelectorConfig.selector) {
-            emailPolicyInformerLabelSelector = emailPolicyInformerLabelSelectorConfig.selector;
+        let emailPolicyInformerOptions: SelectorOptions = {};
+        if (emailPolicyInformerLabelSelectorConfig?.selector) {
+            emailPolicyInformerOptions.labelSelector = emailPolicyInformerLabelSelectorConfig.selector;
         }
 
         const emailPolicyStore = new PolicyStore();
 
-        return [new Informer(kubemailAPIv1a1.emailPolicies(), emailPolicyInformerLabelSelector, emailPolicyStore), emailPolicyStore];
+        return [new Informer(kubemailAPIv1a1.emailPolicies(), emailPolicyInformerOptions, emailPolicyStore), emailPolicyStore];
     }
 
     private buildPodInformer(): [Informer<Pod, PodWithStatus>, PodStore] {
         const coreAPIv1 = this.api.core().v1();
         const podInformerLabelSelectorConfig = this.podInformerConfig;
 
-        let podInformerLabelSelector = {};
-        if (podInformerLabelSelectorConfig && podInformerLabelSelectorConfig.selector) {
-            podInformerLabelSelector = podInformerLabelSelectorConfig.selector;
+        let podInformerOptions: SelectorOptions = {};
+        if (podInformerLabelSelectorConfig?.selector) {
+            podInformerOptions.labelSelector = podInformerLabelSelectorConfig.selector;
         }
 
         const podStore = new PodStore(new CachingLookupStore(coreAPIv1.pods()), coreAPIv1.pods(), PodPredicates.OnlyRunning);
-        return [new Informer(coreAPIv1.pods(), podInformerLabelSelector, podStore), podStore];
+        return [new Informer(coreAPIv1.pods(), podInformerOptions, podStore), podStore];
     }
 
     private initializeController(serverController: Controller, policyController: Controller, podController: Controller): Promise<void> {
