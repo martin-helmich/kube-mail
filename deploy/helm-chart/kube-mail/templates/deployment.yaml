@@ -78,7 +78,7 @@ spec:
               value: {{ include "chart.redis.port" . | quote }}
             {{- end }}
             - name: DEBUG
-              value: "*"
+              value: "*,-express:router"
             {{- if .Values.watcher.emailPolicyInformer.selector }}
             - name: WATCHER_EMAILPOLICYINFORMER_SELECTOR
               value: |-
