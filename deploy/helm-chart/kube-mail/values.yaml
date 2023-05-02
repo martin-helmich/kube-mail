@@ -16,6 +16,12 @@ containerSecurityContext:
   enabled: false
   runAsUser: 1001
   runAsNonRoot: true
+
+# This configures which debug messages should be printed to STDOUT. See the docs
+# of the "debug" NPM package [1] for more information.
+#   [1]: https://www.npmjs.com/package/debug
+debug: "*,-express:router"
+
 smtp:
   service:
     externalPort: 25

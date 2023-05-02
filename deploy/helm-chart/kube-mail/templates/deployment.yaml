@@ -77,8 +77,10 @@ spec:
             - name: KUBEMAIL_REDIS_PORT
               value: {{ include "chart.redis.port" . | quote }}
             {{- end }}
+            {{- if .Values.debug }}
             - name: DEBUG
-              value: "*"
+              value: {{ .Values.debug | quote}}
+            {{- end }}
             {{- if .Values.watcher.emailPolicyInformer.selector }}
             - name: WATCHER_EMAILPOLICYINFORMER_SELECTOR
               value: |-
