@@ -50,7 +50,7 @@ export class SMTPBackend {
 
         session.policy = policy;
 
-        debug("connecting %o", session);
+        debug("connection accepted %o", {id: session.id, policy: session.policy.name, pod: session.policy.sourceReference});
         callback(undefined);
     }
 
