@@ -98,7 +98,7 @@ class PolicyStoreCacheContainer {
             this.defaults.push(obj);
         }
 
-        debug("updated policy store: %O", this);
+        debug("updated policy store");
     }
 
     public get(namespace: string, name: string): EmailPolicy | undefined {
