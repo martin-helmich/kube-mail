@@ -32,7 +32,7 @@ spec:
         - alert: KubeMailForwardErrorsByPolicy
           annotations:
             message: |
-              {{ `Email policy {{ $labels.policy_namespace }}/{{ $labels.policy_name }} has {{ $values }} errors per second while fowarding mails` }}
+              {{ `Email policy {{ $labels.policy_namespace }}/{{ $labels.policy_name }} has {{ $value }} errors per second while fowarding mails` }}
             summary: Email policy has high forwarding error rate
           expr: sum(rate(kubemail_forward_errors[5m])) by (policy_namespace, policy_name) > 0
           labels: {{ .Values.prometheus.alerting.rules.KubeMailForwardErrorsByPolicy.labels | toYaml | nindent 12 }}
@@ -42,7 +42,7 @@ spec:
         - alert: KubeMailForwardErrorsByServer
           annotations:
             message: |
-              {{ `SMTP server {{ $labels.server_namespace }}/{{ $labels.server_name }} has {{ $values }} errors per second while fowarding mails` }}
+              {{ `SMTP server {{ $labels.server_namespace }}/{{ $labels.server_name }} has {{ $value }} errors per second while fowarding mails` }}
             summary: SMTP server has high forwarding error rate
           expr: sum(rate(kubemail_forward_errors[5m])) by (server_namespace, server_name) > 0
           labels: {{ .Values.prometheus.alerting.rules.KubeMailForwardErrorsByServer.labels | toYaml | nindent 12 }}
@@ -52,9 +52,9 @@ spec:
         - alert: KubeMailRejectedNoPod
           annotations:
             message: |
-              {{ `{{ $values }} mails per second are rejected because they originate from unknown pod IPs (is the informer stuck?)` }}
+              {{ `{{ $value }} mails per second are rejected because they originate from unknown pod IPs (is the informer stuck?)` }}
             summary: High "unknown pod" email rejection rate
-          expr: sum(rate(kubemail_rejected_emails_nopod)[5m]) > 0
+          expr: sum(rate(kubemail_rejected_emails_nopod[5m])) > 0
           labels: {{ .Values.prometheus.alerting.rules.KubeMailRejectedNoPod.labels | toYaml | nindent 12 }}
           for: 5m
         {{- end }}
@@ -62,9 +62,9 @@ spec:
         - alert: KubeMailRejectedNoPolicy
           annotations:
             message: |
-              {{ `{{ $values }} mails per second are rejected from pod {{ $labels.pod_namespace }}/{{ $labels.pod_name }} because there is no forwarding policy for their pod` }}
+              {{ `{{ $value }} mails per second are rejected from pod {{ $labels.pod_namespace }}/{{ $labels.pod_name }} because there is no forwarding policy for their pod` }}
             summary: High email rejection rate due to missing email policy
-          expr: sum(rate(kubemail_rejected_emails_nopolicy)[5m]) by (pod_namespace, pod_name) > 0
+          expr: sum(rate(kubemail_rejected_emails_nopolicy[5m])) by (pod_namespace, pod_name) > 0
           labels: {{ .Values.prometheus.alerting.rules.KubeMailRejectedNoPolicy.labels | toYaml | nindent 12 }}
           for: 5m
         {{- end }}
@@ -72,9 +72,9 @@ spec:
         - alert: KubeMailRejectedRatelimit
           annotations:
             message: |
-              {{ `{{ $values }} mails per second are rejected from policy {{ $labels.policy_namespace }}/{{ $labels.policy_name }} because its rate limit was exceeded` }}
+              {{ `{{ $value }} mails per second are rejected from policy {{ $labels.policy_namespace }}/{{ $labels.policy_name }} because its rate limit was exceeded` }}
             summary: High email rejection rate due to exceeded rate limit
-          expr: sum(rate(kubemail_rejected_emails_ratelimit)[5m]) by (policy_namespace, policy_name) > 0
+          expr: sum(rate(kubemail_rejected_emails_ratelimit[5m])) by (policy_namespace, policy_name) > 0
           labels: {{ .Values.prometheus.alerting.rules.KubeMailRejectedRatelimit.labels | toYaml | nindent 12 }}
           for: 5m
         {{- end }}
@@ -82,7 +82,7 @@ spec:
         - alert: KubeMailForwardErrors
           annotations:
             message: |
-              {{ `Overall forwarding error rate is high, at {{ $values }} rejections per second` }}
+              {{ `Overall forwarding error rate is high, at {{ $value }} rejections per second` }}
             summary: High overall email forwarding error rate
           expr: sum(rate(kubemail_forward_errors[5m])) > 0
           labels: {{ .Values.prometheus.alerting.rules.KubeMailForwardErrors.labels | toYaml | nindent 12 }}
