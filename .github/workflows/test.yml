@@ -96,10 +96,12 @@ jobs:
       - name: Run tests
         run: |
           POD_NAME=$(kubectl get po -l app.kubernetes.io/name=kube-mail -o=jsonpath='{.items[0].metadata.name}')
+          REDIS_POD_NAME=$(kubectl get po -l app.kubernetes.io/name=redis -o=jsonpath='{.items[0].metadata.name}')
           kubectl apply -f tests/integration/setup
 
           kubectl wait pod/upstream --for=condition=ready
           kubectl wait pod/$POD_NAME --for=condition=ready
+          kubectl wait pod/$REDIS_POD_NAME --for=condition=ready --timeout=120s
 
           kubectl port-forward upstream 8080:8080 &
           kubectl port-forward $POD_NAME 9100:9100 &
