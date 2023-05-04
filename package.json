@@ -33,7 +33,7 @@
         "test:integration": "jest tests/integration"
     },
     "dependencies": {
-        "@mittwald/kubernetes": "^3.5.0",
+        "@mittwald/kubernetes": "^3.6.0",
         "config": "^3.3.6",
         "debug": "^4.3.4",
         "express": "^4.17.3",
