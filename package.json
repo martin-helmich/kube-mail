@@ -10,7 +10,7 @@
         "node": "^18"
     },
     "devDependencies": {
-        "@types/config": "^0.0.37",
+        "@types/config": "^3.3.0",
         "@types/express": "^4.17.17",
         "@types/jest": "^29.5.0",
         "@types/js-yaml": "^4.0.5",
