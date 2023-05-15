@@ -86,7 +86,7 @@ export class KubernetesPolicyProviderFactory {
             podInformerOptions.labelSelector = podInformerLabelSelectorConfig.selector;
         }
 
-        const podStore = new PodStore(new CachingLookupStore(coreAPIv1.pods()), coreAPIv1.pods(), PodPredicates.OnlyRunning);
+        const podStore = new PodStore(new CachingLookupStore(coreAPIv1.pods()), coreAPIv1.pods(), PodPredicates.OnlyRunningOrPending);
         return [new Informer(coreAPIv1.pods(), podInformerOptions, podStore), podStore];
     }
 

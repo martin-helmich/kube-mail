@@ -48,6 +48,8 @@ export class KubernetesPolicyProvider implements PolicyProvider {
             }
         }
 
+        debug("pod found: %o; labels: %O", pod.metadata.name, pod.metadata.labels);
+
         const {namespace = "", labels = {}} = pod.metadata;
         const policies = this.policyStore.match(namespace, labels);
 

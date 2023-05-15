@@ -33,6 +33,7 @@ export type PodPredicate = (pod: PodWithStatus) => boolean
 export const PodPredicates = {
     Any: (p: PodWithStatus) => true,
     OnlyRunning: (p: PodWithStatus) => p.status.phase === "Running",
+    OnlyRunningOrPending: (p: PodWithStatus) => ["Running", "Pending"].includes(p.status.phase),
 }
 
 export class PodStore implements Store<PodWithStatus> {
