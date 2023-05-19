@@ -16,6 +16,7 @@ containerSecurityContext:
   enabled: false
   runAsUser: 1001
   runAsNonRoot: true
+policyClassName: {}
 smtp:
   service:
     externalPort: 25
