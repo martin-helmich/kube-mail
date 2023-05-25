@@ -42,7 +42,7 @@
         "mailparser": "^3.6.4",
         "nodemailer": "^6.9.2",
         "prom-client": "^12.0.0",
-        "smtp-server": "^3.11.0"
+        "smtp-server": "^3.12.0"
     },
     "jest": {
         "globals": {
