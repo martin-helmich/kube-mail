@@ -107,3 +107,18 @@ redis:
 externalRedis:
   port:
   host:
+
+# Use this setting to enable and configure a VerticalPodAutoscaler for the main
+# kube-mail deployment. See [1] for more information.
+#
+#   [1]: https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler
+verticalPodAutoscaler:
+  enabled: false
+  # Just as with requests+limits, we recommend for users to figure these values
+  # out for themselves.
+  # maxAllowed:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # minAllowed:
+  #   cpu: 100m
+  #   memory: 128Mi
