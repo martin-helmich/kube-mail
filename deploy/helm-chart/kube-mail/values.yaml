@@ -16,7 +16,7 @@ containerSecurityContext:
   enabled: false
   runAsUser: 1001
   runAsNonRoot: true
-policyClassName: {}
+# priorityClassName: "system-cluster-critical"
 smtp:
   service:
     externalPort: 25
