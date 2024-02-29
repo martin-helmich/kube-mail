@@ -22,6 +22,7 @@ containerSecurityContext:
 #   [1]: https://www.npmjs.com/package/debug
 debug: "*,-express:router"
 
+# priorityClassName: "system-cluster-critical"
 smtp:
   service:
     externalPort: 25

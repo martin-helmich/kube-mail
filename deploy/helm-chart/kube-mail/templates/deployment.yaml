@@ -34,6 +34,9 @@ spec:
       {{- if .Values.podSecurityContext.enabled }}
       securityContext: {{- omit .Values.podSecurityContext "enabled" | toYaml | nindent 8 }}
       {{- end }}
+      {{- with .Values.priorityClassName }}
+      priorityClassName: {{ . | quote }}
+      {{- end }}
       containers:
         - name: kube-mail
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
